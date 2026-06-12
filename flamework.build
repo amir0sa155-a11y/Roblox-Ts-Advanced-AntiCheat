@@ -2,8 +2,7 @@
 	"version": 1,
 	"flameworkVersion": "1.3.2",
 	"identifiers": {
-		"ttttt:out/server/services/BanService@BanService": "server/services/BanService@BanService",
-		"ttttt:out/shared/network@GlobalEvents": "shared/network@GlobalEvents"
+		"ttttt:out/server/services/BanService@BanService": "server/services/BanService@BanService"
 	},
 	"metadata": {}
 }

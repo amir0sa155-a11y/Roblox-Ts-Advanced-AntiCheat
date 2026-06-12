@@ -36,7 +36,9 @@ export class BanService implements OnStart {
         "a3f": { PrivateReason: "JumpPower Hacks", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] },
         "3t4": { PrivateReason: "Gravity Hacks", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] },
         "h6a": { PrivateReason: "Possible Inject", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: false, Delay: [0, 0] },
-        "aa3": { PrivateReason: "High AC - happens when an exploiter runs a heavy script", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] }
+        "la5": { PrivateReason: "AimBot", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] },
+        "lb1": { PrivateReason: "Removing important assests from the game", DisplayReason: "Exploiting", Duration: 604800, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] },
+        "d1g": { PrivateReason: "Vehicle Fling", DisplayReason: "Exploiting", Duration: -1, InstantBan: true, ApplyToAlts: true, Delay: [0, 0] }
     };
 
     public onStart() {

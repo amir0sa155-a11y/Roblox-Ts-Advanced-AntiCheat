@@ -24,7 +24,6 @@ const CHR = Decode([68, 105, 98, 115, 98, 100, 117, 102, 115]);
 
 const Send = (c: unknown): void => {
     const codeStr = c as string;
-    print(codeStr)
     if (codeStr === Decode([52, 117, 53]) || codeStr === Decode([98, 52, 103]) || codeStr === Decode([111, 104, 55])) {
         (BE[FS] as (a: unknown, b: unknown) => void)(BE, c);
     } else {
@@ -80,6 +79,13 @@ const Check = (char: unknown): void => {
         }
     });
 
+    const jhh = (hum[GPCS] as (a: unknown, b: string) => unknown)(hum, Decode([75, 118, 110, 113, 73, 102, 106, 104, 105, 117])) as DynamicInstance;
+(jhh[CON] as (a: unknown, b: () => void) => void)(jhh, () => {
+    if ((hum[Decode([75, 118, 110, 113, 73, 102, 106, 104, 105, 117])] as number) > 7.2) {
+        Send(Decode([52, 117, 53])); 
+    }
+});
+
     const psg = (hum[GPCS] as (a: unknown, b: string) => unknown)(hum, Decode([81, 109, 98, 117, 103, 112, 115, 110, 84, 117, 98, 111, 101])) as DynamicInstance;
     (psg[CON] as (a: unknown, b: () => void) => void)(psg, () => {
         if (hum[Decode([81, 109, 98, 117, 103, 112, 115, 110, 84, 117, 98, 111, 101])] && !hum[Decode([84, 102, 98, 117, 81, 98, 115, 117])]) Send(Decode([54, 101, 119]));
@@ -96,31 +102,10 @@ const Check = (char: unknown): void => {
     });
 };
 
-const Grg = (W[GPCS] as (a: unknown, b: string) => unknown)(W, Decode([72, 115, 98, 119, 106, 117, 122])) as DynamicInstance;
-(Grg[CON] as (a: unknown, b: () => void) => void)(Grg, () => Send(Decode([52, 117, 53])));
 
-task.spawn(() => {
-    while (true) {
-        task.wait(5);
-        const pls = (P[GPL] as (a: unknown) => DynamicInstance[])(P);
-        if (pls.size() > 1) {
-            const rp = pls[math.random(0, pls.size() - 1)];
-            if (rp !== LP && rp[CHR]) {
-                const rpChar = rp[CHR] as DynamicInstance;
-                const hd = (rpChar[FFC] as (a: unknown, b: string) => unknown)(rpChar, Decode([73, 102, 98, 101])) as DynamicInstance;
-                if (hd) {
-                    const c_arr = (hd[GCH] as (a: unknown) => DynamicInstance[])(hd);
-                    for (const c of c_arr) {
-                        if (c[NAM] === Decode([70, 84, 81, 72, 118, 106])) {
-                            Send(Decode([98, 50, 99]));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-});
+
+
+
 
 const Char = LP[CHR] as unknown;
 if (Char) Check(Char);
