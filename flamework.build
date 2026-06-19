@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"flameworkVersion": "1.3.2",
+	"identifiers": {
+		"ttttt:out/client/controllers/Main/Core@CoreController": "client/controllers/Main/Core@CoreController",
+		"ttttt:out/client/controllers/Main/AimBotAntiCheatController@AimBotDetectionController": "client/controllers/Main/AimBotAntiCheatController@AimBotDetectionController",
+		"ttttt:out/client/controllers/Main/AntiCheatController@AntiCheatController": "client/controllers/Main/AntiCheatController@AntiCheatController",
+		"ttttt:out/client/controllers/Main/MemoryAntiCheatController@MemoryDetectionController": "client/controllers/Main/MemoryAntiCheatController@MemoryDetectionController",
+		"ttttt:out/client/controllers/Main/ObfuscationController@ObfuscationController": "client/controllers/Main/ObfuscationController@ObfuscationController",
+		"ttttt:out/client/controllers/Main/VehicleAntiCheatController@VehicleAntiCheatController": "client/controllers/Main/VehicleAntiCheatController@VehicleAntiCheatController",
+		"ttttt:out/client/controllers/Utility/GuiAntiCheatController@CoreGuiController": "client/controllers/Utility/GuiAntiCheatController@CoreGuiController",
+		"ttttt:out/client/controllers/Utility/AntiDex@GuiAntiCheatController": "client/controllers/Utility/AntiDex@GuiAntiCheatController",
+		"ttttt:out/server/AntiCheat/Character/AntiCheat@AntiCheatService": "server/AntiCheat/Character/AntiCheat@AntiCheatService",
+		"ttttt:out/server/AntiCheat/Utility/RemoteManager@AntiCheatRemoteService": "server/AntiCheat/Utility/RemoteManager@AntiCheatRemoteService",
+		"ttttt:out/server/AntiCheat/Vehicle/AlignCheck@VehicleAlignCheck": "server/AntiCheat/Vehicle/AlignCheck@VehicleAlignCheck",
+		"ttttt:out/server/AntiCheat/Vehicle/AngleCheck@VehicleAngleCheck": "server/AntiCheat/Vehicle/AngleCheck@VehicleAngleCheck",
+		"ttttt:out/server/AntiCheat/Vehicle/FlyCheck@VehicleFlyCheck": "server/AntiCheat/Vehicle/FlyCheck@VehicleFlyCheck",
+		"ttttt:out/server/AntiCheat/Vehicle/NoClipCheck@VehicleNoclipCheck": "server/AntiCheat/Vehicle/NoClipCheck@VehicleNoclipCheck",
+		"ttttt:out/server/services/BanService@BanService": "server/services/BanService@BanService",
+		"ttttt:out/server/AntiCheat/Vehicle/VehicleFlingCheck@VehicleSpeedService": "server/AntiCheat/Vehicle/VehicleFlingCheck@VehicleSpeedService",
+		"ttttt:out/server/services/AwaitService@AntiCheatRemoteService": "server/services/AwaitService@AntiCheatRemoteService",
+		"ttttt:out/server/services/SpawnService@VehicleSpawnService": "server/services/SpawnService@VehicleSpawnService"
+	},
+	"metadata": {}
+}

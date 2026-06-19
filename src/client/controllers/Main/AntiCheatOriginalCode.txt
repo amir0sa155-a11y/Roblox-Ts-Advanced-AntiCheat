@@ -1,0 +1,106 @@
+import { Controller, OnStart } from "@flamework/core";
+import { LogService, Players, Workspace } from "@rbxts/services";
+import { CoreController } from "./Core";
+@Controller()
+export class AntiCheatController implements OnStart {
+    constructor(private readonly security: CoreController) {}
+
+    public onStart() {
+        this.security.waitForReady();
+        const LocalPlayer = Players.LocalPlayer;
+        const movementClasses = [
+            "LinearVelocity",
+            "BodyGyro",
+            "BodyVelocity",
+            "BodyPosition",
+            "BodyThrust",
+            "BodyForce",
+            "AngularVelocity",
+            "AlignPosition",
+            "AlignOrientation",
+            "VectorForce",
+        ];
+
+        const consoleBlackListWords = ["Returning Json"];
+
+        LogService.MessageOut.Connect((message) => {
+            const lowerMessage = message.lower();
+
+            for (const word of consoleBlackListWords) {
+                if (lowerMessage.match(word.lower()).size() > 0) {
+                    this.security.fireBan("b1a");
+                }
+            }
+        });
+
+        Workspace.DescendantAdded.Connect((descendant) => {
+            if (movementClasses.includes(descendant.ClassName)) {
+                this.security.fireBan("ma1");
+            }
+        });
+
+        const setupAntiCheat = (character: Model) => {
+            const humanoid = character.WaitForChild("Humanoid") as Humanoid;
+
+            for (const part of character.GetChildren()) {
+                if (part.IsA("BasePart")) {
+                    const name = part.Name;
+
+                    if (name === "UpperTorso" || name === "LowerTorso" || name === "Torso") {
+                        part.GetPropertyChangedSignal("CanCollide").Connect(() => {
+                            if (!part.CanCollide) {
+                                this.security.fireBan("2ff");
+                            }
+                        });
+                    }
+                }
+            }
+
+            let jumpCount = 0;
+
+            humanoid.StateChanged.Connect((_, newState) => {
+                if (newState === Enum.HumanoidStateType.Jumping && humanoid.FloorMaterial === Enum.Material.Air) {
+                    jumpCount++;
+
+                    if (jumpCount > 1) {
+                        this.security.fireBan("2ht");
+                    }
+                } else if (humanoid.FloorMaterial !== Enum.Material.Air) {
+                    jumpCount = 0;
+                }
+            });
+
+            humanoid.GetPropertyChangedSignal("JumpHeight").Connect(() => {
+                if (humanoid.JumpHeight > 7.2) {
+                    this.security.fireBan("3t4");
+                }
+            });
+
+            humanoid.GetPropertyChangedSignal("PlatformStand").Connect(() => {
+                if (humanoid.PlatformStand && humanoid.SeatPart === undefined) {
+                    this.security.fireBan("5cv");
+                }
+            });
+
+            humanoid.GetPropertyChangedSignal("WalkSpeed").Connect(() => {
+                if (humanoid.WalkSpeed > 20) {
+                    this.security.fireBan("ng6");
+                }
+            });
+
+            humanoid.GetPropertyChangedSignal("JumpPower").Connect(() => {
+                if (humanoid.JumpPower > 50) {
+                    this.security.fireBan("a3f");
+                }
+            });
+        };
+
+        if (LocalPlayer.Character) {
+            setupAntiCheat(LocalPlayer.Character);
+        }
+
+        LocalPlayer.CharacterAdded.Connect((character) => {
+            setupAntiCheat(character);
+        });
+    }
+}

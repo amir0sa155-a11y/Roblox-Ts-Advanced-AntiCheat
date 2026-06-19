@@ -1,10 +1,10 @@
 import { Controller, OnStart } from "@flamework/core";
 import { ContentProvider, Players, Stats } from "@rbxts/services";
-import { CoreSecurityController } from "./Core";
+import { CoreController } from "./Core";
 
 @Controller()
 export class MemoryDetectionController implements OnStart {
-	constructor(private readonly security: CoreSecurityController) {}
+	constructor(private readonly security: CoreController) {}
 
 	public onStart() {
 		this.security.waitForReady();

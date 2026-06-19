@@ -52,7 +52,7 @@ export class BanService implements OnStart {
 			ApplyToAlts: true,
 			Delay: [64800, 124000],
 		},
-		"5dv": {
+		"5cv": {
 			PrivateReason: "Fly",
 			DisplayReason: "Exploiting",
 			Duration: -1,
@@ -134,6 +134,14 @@ export class BanService implements OnStart {
 		},
 		b3s: {
 			PrivateReason: "Car Speed Boost",
+			DisplayReason: "Exploiting",
+			Duration: -1,
+			InstantBan: true,
+			ApplyToAlts: true,
+			Delay: [0, 0],
+		},
+		b1a: {
+			PrivateReason: "Blacklisted Words In Console",
 			DisplayReason: "Exploiting",
 			Duration: -1,
 			InstantBan: true,
