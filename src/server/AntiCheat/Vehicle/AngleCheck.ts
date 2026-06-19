@@ -13,13 +13,12 @@ interface VehicleState {
 
 @Service()
 export class VehicleAngleCheck implements OnStart {
-	private readonly maxAngle = 15;
 	private readonly maxDot = math.sin(math.rad(15));
 	private states = new Map<Player, { lastVehicleTouch: number; lastPartTouch: number }>();
 	private vehicleStates = new Map<Model, VehicleState>();
 
 	private overlapParams = new OverlapParams();
-	private raycastParams = new RaycastParams();
+	private raycastcastParams = new RaycastParams();
 
 	private maxPing = 0.6;
 	private dataBufferLimit = 1.7;
@@ -28,7 +27,7 @@ export class VehicleAngleCheck implements OnStart {
 
 	public onStart() {
 		this.overlapParams.FilterType = Enum.RaycastFilterType.Exclude;
-		this.raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
+		this.raycastcastParams.FilterType = Enum.RaycastFilterType.Exclude;
 
 		if (!this.vehiclesFolder) {
 			this.vehiclesFolder = Workspace.WaitForChild("Vehicles") as Folder;
@@ -57,8 +56,8 @@ export class VehicleAngleCheck implements OnStart {
 		for (const vehicle of this.vehiclesFolder.GetChildren()) {
 			if (!vehicle.IsA("Model")) continue;
 
-			const bodyPart = vehicle.FindFirstChild("Body", true) as BasePart | undefined;
-			if (!bodyPart) continue;
+			const body = vehicle.FindFirstChild("Body") as BasePart;
+			if (!body) continue;
 
 			if (!this.vehicleStates.has(vehicle)) {
 				this.vehicleStates.set(vehicle, {
@@ -70,15 +69,15 @@ export class VehicleAngleCheck implements OnStart {
 
 			state.history.push({
 				time: now,
-				cframe: bodyPart.CFrame,
-				size: bodyPart.Size,
+				cframe: body.CFrame,
+				size: body.Size,
 			});
 
 			state.history = state.history.filter((record) => now - record.time <= this.dataBufferLimit);
 		}
 	}
 
-	private findHistoryAtTime(history: VehicleHistory[], targetTime: number) {
+	private HistoryAtTime(history: VehicleHistory[], targetTime: number) {
 		if (history.size() === 0) return undefined;
 
 		let closest = history[0];
@@ -111,23 +110,24 @@ export class VehicleAngleCheck implements OnStart {
 		const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
 		if (!myCar) return;
 
-		const driveSeat = (myCar.FindFirstChild("DriveSeat", true) ?? myCar.FindFirstChildWhichIsA("VehicleSeat")) as
+		const driveSeat = (myCar.FindFirstChild("DriveSeat") ?? myCar.FindFirstChildWhichIsA("VehicleSeat")) as
 			| VehicleSeat
 			| undefined;
 
-		const bodyPartInstance = myCar.FindFirstChild("Body", true);
-		let bodyPart: BasePart | undefined;
+		const bodyInstance = myCar.FindFirstChild("Body");
+		let body: BasePart | undefined;
 
-		if (!driveSeat || !bodyPartInstance) return;
+		if (!driveSeat || !bodyInstance) return;
 
-		if (bodyPartInstance.IsA("BasePart")) {
-			bodyPart = bodyPartInstance;
+		if (bodyInstance.IsA("BasePart")) {
+			body = bodyInstance;
 		} else {
-			bodyPart = (bodyPartInstance.FindFirstChildWhichIsA("BasePart") ??
-				bodyPartInstance.FindFirstChild("Body")) as BasePart | undefined;
+			body = (bodyInstance.FindFirstChildWhichIsA("BasePart") ?? bodyInstance.FindFirstChild("Body")) as
+				| BasePart
+				| undefined;
 		}
 
-		if (!bodyPart) return;
+		if (!body) return;
 
 		const occupant = driveSeat.Occupant;
 		if (!occupant || occupant.Parent !== player.Character) return;
@@ -143,14 +143,14 @@ export class VehicleAngleCheck implements OnStart {
 
 		const ping = math.min(player.GetNetworkPing(), this.maxPing);
 
-		const velocity = bodyPart.AssemblyLinearVelocity;
-		const hitboxSize = bodyPart.Size.mul(1.1);
+		const velocity = body.AssemblyLinearVelocity;
+		const hitboxSize = body.Size.mul(1.1);
 
 		this.overlapParams.FilterDescendantsInstances = [myCar, player.Character as Instance];
-		this.raycastParams.FilterDescendantsInstances = [myCar, player.Character as Instance];
+		this.raycastcastParams.FilterDescendantsInstances = [myCar, player.Character as Instance];
 
 		let touchingVehicle = false;
-		let touchingNormal = false;
+		let touchingObject = false;
 
 		const speed = velocity.Magnitude;
 		const castDistance = math.clamp(speed * ping, 0.1, 100);
@@ -159,10 +159,10 @@ export class VehicleAngleCheck implements OnStart {
 			const direction = velocity.Unit;
 
 			const castResult = Workspace.Blockcast(
-				bodyPart.CFrame,
+				body.CFrame,
 				hitboxSize,
 				direction.mul(castDistance),
-				this.raycastParams,
+				this.raycastcastParams,
 			);
 
 			if (castResult) {
@@ -172,13 +172,13 @@ export class VehicleAngleCheck implements OnStart {
 					if (hitTarget.IsDescendantOf(this.vehiclesFolder)) {
 						touchingVehicle = true;
 					} else {
-						touchingNormal = true;
+						touchingObject = true;
 					}
 				}
 			}
 		}
 
-		const parts = Workspace.GetPartBoundsInBox(bodyPart.CFrame, hitboxSize, this.overlapParams);
+		const parts = Workspace.GetPartBoundsInBox(body.CFrame, hitboxSize, this.overlapParams);
 
 		for (const part of parts) {
 			if (!part.CanCollide) continue;
@@ -186,7 +186,7 @@ export class VehicleAngleCheck implements OnStart {
 			if (part.IsDescendantOf(this.vehiclesFolder)) {
 				touchingVehicle = true;
 			} else {
-				touchingNormal = true;
+				touchingObject = true;
 			}
 		}
 
@@ -196,42 +196,42 @@ export class VehicleAngleCheck implements OnStart {
 			for (const [otherVehicle, vehicleState] of this.vehicleStates) {
 				if (otherVehicle === myCar) continue;
 
-				const pastSnapshot = this.findHistoryAtTime(vehicleState.history, pastTime);
+				const History = this.HistoryAtTime(vehicleState.history, pastTime);
 
-				if (!pastSnapshot) continue;
+				if (!History) continue;
 
-				if (this.isColliding(bodyPart.CFrame, hitboxSize, pastSnapshot.cframe, pastSnapshot.size)) {
+				if (this.isColliding(body.CFrame, hitboxSize, History.cframe, History.size)) {
 					touchingVehicle = true;
 				}
 			}
 		}
 
-		const ray = Workspace.Raycast(bodyPart.Position, new Vector3(0, -4, 0), this.raycastParams);
+		const raycast = Workspace.Raycast(body.Position, new Vector3(0, -4, 0), this.raycastcastParams);
 
-		if (ray?.Instance?.IsA("Terrain")) {
-			touchingNormal = true;
+		if (raycast?.Instance?.IsA("Terrain")) {
+			touchingObject = true;
 		}
 
 		if (touchingVehicle) state.lastVehicleTouch = now;
-		if (touchingNormal) state.lastPartTouch = now;
+		if (touchingObject) state.lastPartTouch = now;
 
-		if (touchingVehicle || touchingNormal) return;
+		if (touchingVehicle || touchingObject) return;
 
 		const look = driveSeat.CFrame.LookVector;
 		const vertical = look.Y;
 
-		const groundDistance = bodyPart.Size.Y / 2 + 15;
+		const groundDistance = body.Size.Y / 2 + 15;
 		const groundCheck = Workspace.Raycast(
-			bodyPart.Position,
+			body.Position,
 			new Vector3(0, -groundDistance, 0),
-			this.raycastParams,
+			this.raycastcastParams,
 		);
 
-		const flyingTooHigh = !groundCheck;
+		const violating = !groundCheck;
 		const goingUp = vertical > this.maxDot;
 		const goingDown = vertical < -this.maxDot;
 
-		if (goingUp || goingDown || flyingTooHigh) {
+		if (goingUp || goingDown || violating) {
 			if (now - state.lastPartTouch <= 0.8) return;
 			if (now - state.lastVehicleTouch <= 3) return;
 

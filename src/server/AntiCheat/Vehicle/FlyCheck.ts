@@ -9,7 +9,7 @@ interface playerStats {
 	vehicleWhitelistEnd: number;
 	WhiteListCheck: number;
 	Kicked: boolean;
-	airStartTime: number;
+	airTimeStart: number;
 	lastYDirection: "Up" | "Down" | "None";
 	bounceCount: number;
 	violationTimer: number;
@@ -64,8 +64,8 @@ export class VehicleFlyCheck implements OnStart {
 		for (const vehicle of this.vehiclesFolder.GetChildren()) {
 			if (!vehicle.IsA("Model")) continue;
 
-			const bodyPart = vehicle.FindFirstChild("Body", true) as BasePart | undefined;
-			if (!bodyPart) continue;
+			const body = vehicle.FindFirstChild("Body") as BasePart | undefined;
+			if (!body) continue;
 
 			if (!this.vehicleStates.has(vehicle)) {
 				this.vehicleStates.set(vehicle, {
@@ -78,8 +78,8 @@ export class VehicleFlyCheck implements OnStart {
 
 			state.history.push({
 				time: now,
-				cframe: bodyPart.CFrame,
-				size: bodyPart.Size,
+				cframe: body.CFrame,
+				size: body.Size,
 			});
 
 			state.history = state.history.filter((record) => now - record.time <= this.dataBufferLimit);
@@ -121,7 +121,7 @@ export class VehicleFlyCheck implements OnStart {
 				vehicleWhitelistEnd: 0,
 				WhiteListCheck: 0,
 				Kicked: false,
-				airStartTime: 0,
+				airTimeStart: 0,
 				lastYDirection: "None",
 				bounceCount: 0,
 				violationTimer: 0,
@@ -135,33 +135,26 @@ export class VehicleFlyCheck implements OnStart {
 		const state = this.getPlayerState(player);
 		if (state.Kicked) return;
 
-		const character = player.Character;
+		const character = player.Character as Model;
 
 		const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
 
-		const bodyPart = myCar?.FindFirstChild("Body", true) as BasePart | undefined;
+		const body = myCar?.FindFirstChild("Body") as BasePart | undefined;
 
-		const driveSeat = myCar?.FindFirstChildWhichIsA("VehicleSeat", true);
+		const driveSeat = myCar?.FindFirstChildWhichIsA("VehicleSeat");
 
-		const primaryPart = myCar?.PrimaryPart;
+		const primaryPart = (myCar?.PrimaryPart ?? undefined) as BasePart;
 
-		if (
-			!myCar ||
-			!character ||
-			!bodyPart ||
-			!driveSeat ||
-			!primaryPart ||
-			driveSeat.Occupant?.Parent !== character
-		) {
+		if (!myCar || !body || !driveSeat || driveSeat.Occupant?.Parent !== character) {
 			this.resetAirState(state);
 			return;
 		}
 
 		const ping = math.min(player.GetNetworkPing(), this.maxPing);
 
-		const velocity = bodyPart.AssemblyLinearVelocity;
+		const velocity = body.AssemblyLinearVelocity;
 
-		const hitboxSize = bodyPart.Size.mul(1.1);
+		const hitboxSize = body.Size.mul(1.1);
 
 		this.overlapParams.FilterDescendantsInstances = [myCar, character];
 		this.raycastParams.FilterDescendantsInstances = [myCar, character];
@@ -179,7 +172,7 @@ export class VehicleFlyCheck implements OnStart {
 			const direction = velocity.Unit;
 
 			const castResult = Workspace.Blockcast(
-				bodyPart.CFrame,
+				body.CFrame,
 				hitboxSize,
 				direction.mul(castDistance),
 				this.raycastParams,
@@ -198,7 +191,7 @@ export class VehicleFlyCheck implements OnStart {
 			}
 		}
 
-		const parts = Workspace.GetPartBoundsInBox(bodyPart.CFrame, hitboxSize, this.overlapParams);
+		const parts = Workspace.GetPartBoundsInBox(body.CFrame, hitboxSize, this.overlapParams);
 
 		for (const part of parts) {
 			if (!part.CanCollide) continue;
@@ -222,11 +215,11 @@ export class VehicleFlyCheck implements OnStart {
 			for (const [otherVehicle, vehicleState] of this.vehicleStates) {
 				if (otherVehicle === myCar) continue;
 
-				const pastSnapshot = this.findHistoryAtTime(vehicleState.history, pastTime);
+				const History = this.findHistoryAtTime(vehicleState.history, pastTime);
 
-				if (!pastSnapshot) continue;
+				if (!History) continue;
 
-				if (this.isColliding(bodyPart.CFrame, hitboxSize, pastSnapshot.cframe, pastSnapshot.size)) {
+				if (this.isColliding(body.CFrame, hitboxSize, History.cframe, History.size)) {
 					isHittingVehicle = true;
 					vehicleState.whitelistEnd = now + this.vehicleWhiteListTime;
 				}
@@ -262,12 +255,12 @@ export class VehicleFlyCheck implements OnStart {
 		let currentActualVelY = velocity.Y;
 
 		if (state.yAxisHistory.size() >= 2) {
-			const prev = state.yAxisHistory[state.yAxisHistory.size() - 2];
+			const previous = state.yAxisHistory[state.yAxisHistory.size() - 2];
 
-			const dt = now - prev.time;
+			const delta = now - previous.time;
 
-			if (dt > 0.001) {
-				currentActualVelY = (currentY - prev.y) / dt;
+			if (delta > 0.001) {
+				currentActualVelY = (currentY - previous.y) / delta;
 			}
 		}
 
@@ -286,16 +279,16 @@ export class VehicleFlyCheck implements OnStart {
 			state.violationTimer = 0;
 		}
 
-		if (state.airStartTime === 0) {
-			state.airStartTime = now;
+		if (state.airTimeStart === 0) {
+			state.airTimeStart = now;
 		}
 
-		const airDuration = now - state.airStartTime;
+		const airDuration = now - state.airTimeStart;
 
 		if (state.yAxisHistory.size() >= 2) {
-			const prev = state.yAxisHistory[state.yAxisHistory.size() - 2];
+			const previous = state.yAxisHistory[state.yAxisHistory.size() - 2];
 
-			const deltaY = currentY - prev.y;
+			const deltaY = currentY - previous.y;
 
 			if (math.abs(deltaY) > 0.4) {
 				const direction = deltaY > 0 ? "Up" : "Down";
@@ -321,7 +314,7 @@ export class VehicleFlyCheck implements OnStart {
 		if (airDuration >= 0.5) {
 			const history05 = state.yAxisHistory.filter((r) => now - r.time <= 0.5);
 
-			if (history05.size() >= 2 && this.calculateYVariance(history05) <= 0.5) {
+			if (history05.size() >= 2 && this.calculateYDifferent(history05) <= 0.5) {
 				state.Kicked = true;
 				this.playerStates.delete(player);
 				player.Kick("Anticheat: VehicleFly Detect - ab1");
@@ -332,7 +325,7 @@ export class VehicleFlyCheck implements OnStart {
 		if (airDuration >= 1) {
 			const history10 = state.yAxisHistory.filter((r) => now - r.time <= 1);
 
-			if (history10.size() >= 2 && this.calculateYVariance(history10) < 10) {
+			if (history10.size() >= 2 && this.calculateYDifferent(history10) < 10) {
 				state.Kicked = true;
 				this.playerStates.delete(player);
 				player.Kick("Anticheat: VehicleFly Detect - 1a1");
@@ -341,14 +334,14 @@ export class VehicleFlyCheck implements OnStart {
 	}
 
 	private resetAirState(state: playerStats, currentY?: number) {
-		state.airStartTime = 0;
+		state.airTimeStart = 0;
 		state.lastYDirection = "None";
 		state.bounceCount = 0;
 		state.violationTimer = 0;
 		state.yAxisHistory = currentY !== undefined ? [{ time: os.clock(), y: currentY }] : [];
 	}
 
-	private calculateYVariance(records: Array<{ time: number; y: number }>) {
+	private calculateYDifferent(records: Array<{ time: number; y: number }>) {
 		if (records.size() === 0) return 0;
 
 		let minY = records[0].y;

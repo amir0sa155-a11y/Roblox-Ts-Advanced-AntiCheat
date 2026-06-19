@@ -28,16 +28,17 @@ export class VehicleNoclipCheck implements OnStart {
 					continue;
 				}
 
-				const driveSeat = (myCar.FindFirstChild("DriveSeat", true) ??
-					myCar.FindFirstChildWhichIsA("VehicleSeat", true)) as VehicleSeat | undefined;
+				const driveSeat = (myCar.FindFirstChild("DriveSeat") ?? myCar.FindFirstChildWhichIsA("VehicleSeat")) as
+					| VehicleSeat
+					| undefined;
 
-				let bodyPart = myCar.FindFirstChild("Body", true);
+				let body = myCar.FindFirstChild("Body", true);
 
-				if (bodyPart && !bodyPart.IsA("BasePart")) {
-					bodyPart = bodyPart.FindFirstChild("Body") ?? bodyPart.FindFirstChildWhichIsA("BasePart");
+				if (body && !body.IsA("BasePart")) {
+					body = body.FindFirstChild("Body") ?? body.FindFirstChildWhichIsA("BasePart");
 				}
 
-				if (!driveSeat || !bodyPart || !bodyPart.IsA("BasePart") || !driveSeat.Occupant) {
+				if (!driveSeat || !body || !body.IsA("BasePart") || !driveSeat.Occupant) {
 					this.noclipTimers.delete(player);
 					continue;
 				}
@@ -47,21 +48,21 @@ export class VehicleNoclipCheck implements OnStart {
 					continue;
 				}
 
-				const checkSize = new Vector3(bodyPart.Size.X * 0.5, bodyPart.Size.Y * 0.4, bodyPart.Size.Z * 0.5);
-				const checkCFrame = bodyPart.CFrame.mul(new CFrame(0, bodyPart.Size.Y * 0.2, 0));
+				const checkSize = new Vector3(body.Size.X * 0.5, body.Size.Y * 0.4, body.Size.Z * 0.5);
+				const checkCFrame = body.CFrame.mul(new CFrame(0, body.Size.Y * 0.2, 0));
 
-				const overlappingParts = Workspace.GetPartBoundsInBox(checkCFrame, checkSize, this.overlapParams);
+				const parts = Workspace.GetPartBoundsInBox(checkCFrame, checkSize, this.overlapParams);
 
-				let isNoclipping = false;
+				let isNoClip = false;
 
-				for (const hitPart of overlappingParts) {
+				for (const hitPart of parts) {
 					if (hitPart.IsA("Terrain") || (hitPart.IsA("BasePart") && hitPart.CanCollide)) {
-						isNoclipping = true;
+						isNoClip = true;
 						break;
 					}
 				}
 
-				if (isNoclipping) {
+				if (isNoClip) {
 					const startTime = this.noclipTimers.get(player);
 					if (startTime !== undefined) {
 						if (os.clock() - startTime >= 1.5) {

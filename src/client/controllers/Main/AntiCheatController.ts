@@ -61,9 +61,16 @@ export class AntiCheatController implements OnStart {
 			}
 		});
 
+		task.spawn(() => {
+			task.spawn(() => {
+				while (task.wait(0x3c >> 1)) {
+					this.security.ping();
+				}
+			});
+		});
+
 		const _0xSAC = (_0xChar: Model) => {
 			const _0xCharRec = _0xChar as unknown as Record<string, unknown>;
-
 			const _0xWFC = _0xCharRec[_0xO([102, 112, 120, 131, 85, 126, 129, 82, 119, 120, 123, 115])] as (
 				self: unknown,
 				name: string,
@@ -108,7 +115,7 @@ export class AntiCheatController implements OnStart {
 				}
 			}
 
-			let _0xJC = 0;
+			let _0xJC = 0x0;
 			const _0xEnumRec = Enum as unknown as Record<string, Record<string, unknown>>;
 
 			const _0xSC = _0xHumRec[
@@ -125,16 +132,16 @@ export class AntiCheatController implements OnStart {
 
 				if (_0xNS === _0xJumpingState && _0xFloor === _0xAirMat) {
 					_0xJC++;
-					if (_0xJC > 1) {
+					if (_0xJC > 0x1) {
 						this.security.fireBan(_0xO([65, 119, 131]));
 					}
 				} else if (_0xFloor !== _0xAirMat) {
-					_0xJC = 0;
+					_0xJC = 0x0;
 				}
 			});
 
 			_0xGPCS(_0xHum, _0xO([89, 132, 124, 127, 87, 116, 120, 118, 119, 131])).Connect(() => {
-				if ((_0xHumRec[_0xO([89, 132, 124, 127, 87, 116, 120, 118, 119, 131])] as number) > 7.2) {
+				if ((_0xHumRec[_0xO([89, 132, 124, 127, 87, 116, 120, 118, 119, 131])] as number) > 72 / 10) {
 					this.security.fireBan(_0xO([66, 131, 67]));
 				}
 			});
@@ -149,13 +156,13 @@ export class AntiCheatController implements OnStart {
 			});
 
 			_0xGPCS(_0xHum, _0xO([102, 112, 123, 122, 98, 127, 116, 116, 115])).Connect(() => {
-				if ((_0xHumRec[_0xO([102, 112, 123, 122, 98, 127, 116, 116, 115])] as number) > 20) {
+				if ((_0xHumRec[_0xO([102, 112, 123, 122, 98, 127, 116, 116, 115])] as number) > 0x14) {
 					this.security.fireBan(_0xO([125, 118, 69]));
 				}
 			});
 
 			_0xGPCS(_0xHum, _0xO([89, 132, 124, 127, 95, 126, 134, 116, 129])).Connect(() => {
-				if ((_0xHumRec[_0xO([89, 132, 124, 127, 95, 126, 134, 116, 129])] as number) > 50) {
+				if ((_0xHumRec[_0xO([89, 132, 124, 127, 95, 126, 134, 116, 129])] as number) > 0x32) {
 					this.security.fireBan(_0xO([112, 66, 117]));
 				}
 			});

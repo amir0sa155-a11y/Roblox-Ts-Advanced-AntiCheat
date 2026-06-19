@@ -1,7 +1,7 @@
 import { Service, OnStart } from "@flamework/core";
 import { Players, RunService, Workspace } from "@rbxts/services";
 
-interface TrackingData {
+interface Data {
 	validCFrame: CFrame;
 	lastSyncTime: number;
 	lastTick: number;
@@ -25,25 +25,25 @@ const settings = {
 
 @Service()
 export class AntiCheatService implements OnStart {
-	private trackingData = new Map<Player, TrackingData>();
+	private Data = new Map<Player, Data>();
 
 	public onStart() {
 		Players.PlayerAdded.Connect((player) => {
-			player.CharacterAdded.Connect((char) => {
-				const hrp = char.WaitForChild("HumanoidRootPart") as BasePart;
+			player.CharacterAdded.Connect((character) => {
+				const HumanOidRootPart = character.WaitForChild("HumanoidRootPart") as BasePart;
 
 				const overlap = new OverlapParams();
 				overlap.FilterType = Enum.RaycastFilterType.Exclude;
 
-				const filterInstances: Instance[] = [char];
+				const filterInstances: Instance[] = [character];
 				if (Workspace.CurrentCamera) {
 					filterInstances.push(Workspace.CurrentCamera);
 				}
 
 				overlap.FilterDescendantsInstances = filterInstances;
 
-				this.trackingData.set(player, {
-					validCFrame: hrp.CFrame,
+				this.Data.set(player, {
+					validCFrame: HumanOidRootPart.CFrame,
 					lastSyncTime: 0,
 					lastTick: os.clock(),
 					timeSinceLastSync: 0,
@@ -58,51 +58,51 @@ export class AntiCheatService implements OnStart {
 		});
 
 		Players.PlayerRemoving.Connect((player) => {
-			this.trackingData.delete(player);
+			this.Data.delete(player);
 		});
 
 		RunService.Heartbeat.Connect(() => {
 			const now = os.clock();
 
-			this.trackingData.forEach((data, player) => {
-				const char = player.Character;
-				if (!char) return;
+			this.Data.forEach((data, player) => {
+				const character = player.Character;
+				if (!character) return;
 
-				const hrp = char.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
-				const hum = char.FindFirstChild("Humanoid") as Humanoid | undefined;
-				if (!hrp || !hum || hum.Health <= 0) return;
+				const HumanOidRootPart = character.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
+				const humanoid = character.FindFirstChild("Humanoid") as Humanoid | undefined;
+				if (!HumanOidRootPart || !humanoid || humanoid.Health <= 0) return;
 
-				const dt = now - data.lastTick;
-				if (dt <= 0) return;
+				const delta = now - data.lastTick;
+				if (delta <= 0) return;
 
 				data.lastTick = now;
-				data.timeSinceLastSync += dt;
+				data.timeSinceLastSync += delta;
 
-				if (hum.SeatPart) {
-					data.validCFrame = hrp.CFrame;
+				if (humanoid.SeatPart) {
+					data.validCFrame = HumanOidRootPart.CFrame;
 					data.lastSyncTime = now;
 					data.timeSinceLastSync = 0;
 					data.lowStaminaRunTimer = 0;
 					data.lowStaminaJumpCount = 0;
-					data.stamina = math.clamp(data.stamina + (100 / 37) * dt, 0, 100);
+					data.stamina = math.clamp(data.stamina + (100 / 37) * delta, 0, 100);
 					return;
 				}
 
 				if (now - data.lastSyncTime < settings.syncCooldown) {
-					hrp.CFrame = data.validCFrame;
-					hrp.AssemblyLinearVelocity = Vector3.zero;
-					hrp.AssemblyAngularVelocity = Vector3.zero;
+					HumanOidRootPart.CFrame = data.validCFrame;
+					HumanOidRootPart.AssemblyLinearVelocity = Vector3.zero;
+					HumanOidRootPart.AssemblyAngularVelocity = Vector3.zero;
 					return;
 				}
 
-				const velocity = hrp.AssemblyLinearVelocity;
-				const horizontalSpeed = new Vector3(velocity.X, 0, velocity.Z).Magnitude;
+				const velocity = HumanOidRootPart.AssemblyLinearVelocity;
+				const groundSpeed = new Vector3(velocity.X, 0, velocity.Z).Magnitude;
 				const verticalSpeed = velocity.Y;
 
-				const isRunning = horizontalSpeed >= 18.5;
+				const isRunning = groundSpeed >= 18.5;
 				let justJumped = false;
 
-				if (hum.FloorMaterial === Enum.Material.Air) {
+				if (humanoid.FloorMaterial === Enum.Material.Air) {
 					if (!data.wasInAir && verticalSpeed > 0) {
 						justJumped = true;
 						data.wasInAir = true;
@@ -117,29 +117,29 @@ export class AntiCheatService implements OnStart {
 				}
 
 				if (isRunning) {
-					if (data.stamina <= 3) data.lowStaminaRunTimer += dt;
-					data.stamina -= (100 / 23) * dt;
+					if (data.stamina <= 3) data.lowStaminaRunTimer += delta;
+					data.stamina -= (100 / 23) * delta;
 				} else {
 					if (data.stamina > 4) data.lowStaminaRunTimer = 0;
 				}
 
 				if (data.lowStaminaJumpCount >= 2 || data.lowStaminaRunTimer >= 2) {
 					player.Kick("Anticheat: Infinity Stamina Detect");
-					this.trackingData.delete(player);
+					this.Data.delete(player);
 					return;
 				}
 
-				if (!isRunning && hum.FloorMaterial !== Enum.Material.Air) {
-					data.stamina += (100 / 37) * dt;
+				if (!isRunning && humanoid.FloorMaterial !== Enum.Material.Air) {
+					data.stamina += (100 / 37) * delta;
 					if (data.stamina > 7) data.lowStaminaJumpCount = 0;
 				}
 
 				data.stamina = math.clamp(data.stamina, 0, 100);
 
-				const currentCFrame = hrp.CFrame;
+				const currentCFrame = HumanOidRootPart.CFrame;
 				let isClipping = false;
 
-				const parts = Workspace.GetPartBoundsInBox(currentCFrame, hrp.Size.mul(0.5), data.overlap);
+				const parts = Workspace.GetPartBoundsInBox(currentCFrame, HumanOidRootPart.Size.mul(0.5), data.overlap);
 
 				for (const part of parts) {
 					if (part.CanCollide && part.Transparency < 0.9 && !part.IsA("Terrain")) {
@@ -155,19 +155,19 @@ export class AntiCheatService implements OnStart {
 
 					if (data.noclipViolations >= 7) {
 						player.Kick("Anticheat: NoClip Detect");
-						this.trackingData.delete(player);
+						this.Data.delete(player);
 						return;
 					}
 
-					hrp.CFrame = data.validCFrame;
-					hrp.AssemblyLinearVelocity = Vector3.zero;
-					hrp.AssemblyAngularVelocity = Vector3.zero;
+					HumanOidRootPart.CFrame = data.validCFrame;
+					HumanOidRootPart.AssemblyLinearVelocity = Vector3.zero;
+					HumanOidRootPart.AssemblyAngularVelocity = Vector3.zero;
 					return;
 				} else {
-					data.noclipViolations = math.max(0, data.noclipViolations - dt * 0.5);
+					data.noclipViolations = math.max(0, data.noclipViolations - delta * 0.5);
 				}
 
-				const currentPos = hrp.Position;
+				const currentPos = HumanOidRootPart.Position;
 				const validPos = data.validCFrame.Position;
 
 				const distMoved = new Vector3(currentPos.X, 0, currentPos.Z).sub(
@@ -179,32 +179,32 @@ export class AntiCheatService implements OnStart {
 
 				let rubberBand = false;
 
-				if (horizontalSpeed > settings.maxWalkSpeed + settings.speedTolerance) {
+				if (groundSpeed > settings.maxWalkSpeed + settings.speedTolerance) {
 					rubberBand = true;
 				}
 
 				if (
 					!rubberBand &&
 					verticalSpeed > settings.maxJumpPower + settings.jumpTolerance &&
-					hum.FloorMaterial === Enum.Material.Air
+					humanoid.FloorMaterial === Enum.Material.Air
 				) {
 					rubberBand = true;
 				}
 
-				const maxAllowedDist =
+				const maxDistance =
 					(settings.maxWalkSpeed + settings.speedTolerance) * (data.timeSinceLastSync + cappedPing) + 2;
 
-				if (!rubberBand && distMoved > maxAllowedDist) {
+				if (!rubberBand && distMoved > maxDistance) {
 					rubberBand = true;
 				}
 
 				if (rubberBand) {
-					hrp.CFrame = data.validCFrame;
-					hrp.AssemblyLinearVelocity = Vector3.zero;
-					hrp.AssemblyAngularVelocity = Vector3.zero;
+					HumanOidRootPart.CFrame = data.validCFrame;
+					HumanOidRootPart.AssemblyLinearVelocity = Vector3.zero;
+					HumanOidRootPart.AssemblyAngularVelocity = Vector3.zero;
 				} else {
-					if (hum.FloorMaterial !== Enum.Material.Air) {
-						data.validCFrame = hrp.CFrame;
+					if (humanoid.FloorMaterial !== Enum.Material.Air) {
+						data.validCFrame = HumanOidRootPart.CFrame;
 						data.timeSinceLastSync = 0;
 					}
 				}

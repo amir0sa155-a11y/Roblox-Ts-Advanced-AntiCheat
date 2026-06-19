@@ -3,15 +3,14 @@ import { Players, ReplicatedStorage, HttpService, ServerStorage } from "@rbxts/s
 
 @Service()
 export class AntiCheatRemoteService implements OnStart {
-	private maxRequests = 1;
-	private giveRequests = new Map<number, number>();
+	maxRequests = 1;
+	giveRequests = new Map<number, number>();
 
-	private secureRemote!: RemoteEvent;
-	private giveRemote!: RemoteEvent;
+	secureRemote!: RemoteEvent;
+	giveRemote!: RemoteEvent;
 
 	public onStart() {
 		const name = HttpService.GenerateGUID(false);
-
 		this.secureRemote = new Instance("RemoteEvent");
 		this.secureRemote.Name = name;
 		this.secureRemote.Parent = ReplicatedStorage;

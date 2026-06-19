@@ -1,0 +1,92 @@
+import { Controller, OnStart } from "@flamework/core";
+import { Players, RunService, Workspace } from "@rbxts/services";
+import { CoreController } from "./Core";
+
+@Controller()
+export class VehicleAntiCheatController implements OnStart {
+	constructor(private readonly security: CoreController) {}
+
+	public onStart() {
+		this.security.waitForReady();
+
+		const localPlayer = Players.LocalPlayer;
+
+		const setupCharacter = (character: Model) => {
+			const humanoid = character.WaitForChild("Humanoid") as Humanoid;
+
+			let heartbeatConnection: RBXScriptConnection | undefined;
+			let touchConnection: RBXScriptConnection | undefined;
+
+			humanoid.Seated.Connect((active, seat) => {
+				if (heartbeatConnection) {
+					heartbeatConnection.Disconnect();
+					heartbeatConnection = undefined;
+				}
+				if (touchConnection) {
+					touchConnection.Disconnect();
+					touchConnection = undefined;
+				}
+
+				if (!active || !seat || !seat.IsA("VehicleSeat")) return;
+
+				const vehicleSeat = seat as VehicleSeat;
+				const vehiclesFolder = Workspace.FindFirstChild("Vehicles");
+				const playerVehicle = vehiclesFolder?.FindFirstChild(localPlayer.Name);
+				const Body = playerVehicle?.FindFirstChild("Body") as BasePart | undefined;
+
+				let lastTouchTime = 0;
+				let kd1ViolationTimer = 0;
+
+				if (Body && vehiclesFolder) {
+					touchConnection = Body.Touched.Connect((otherPart) => {
+						if (otherPart.IsDescendantOf(vehiclesFolder) && !otherPart.IsDescendantOf(playerVehicle!)) {
+							lastTouchTime = os.clock();
+						}
+					});
+				}
+
+				let lastPosition = vehicleSeat.Position;
+				let lastVelocity = vehicleSeat.AssemblyLinearVelocity.Magnitude;
+
+				heartbeatConnection = RunService.Heartbeat.Connect((dt) => {
+					if (!vehicleSeat.Parent || dt <= 0) return;
+
+					const currentPos = vehicleSeat.Position;
+					const currentAssemblyVel = vehicleSeat.AssemblyLinearVelocity;
+					const currentAssemblySpeed = currentAssemblyVel.Magnitude;
+
+					const displacement = currentPos.sub(lastPosition).Magnitude;
+					const calculatedSpeed = displacement / dt;
+
+					if (currentAssemblySpeed <= 1 && calculatedSpeed >= 25) {
+						kd1ViolationTimer += dt;
+
+						if (kd1ViolationTimer >= 4) {
+							if (heartbeatConnection) heartbeatConnection.Disconnect();
+							this.security.fireBan("kd1");
+							return;
+						}
+					} else {
+						kd1ViolationTimer = math.max(0, kd1ViolationTimer - dt * 2);
+					}
+
+					if (currentAssemblySpeed < 350) {
+						const velSpike = currentAssemblySpeed - lastVelocity;
+						if (velSpike >= 22 && os.clock() - lastTouchTime > 0.6) {
+							if (heartbeatConnection) heartbeatConnection.Disconnect();
+							if (touchConnection) touchConnection.Disconnect();
+							this.security.fireBan("b3s");
+							return;
+						}
+					}
+
+					lastPosition = currentPos;
+					lastVelocity = currentAssemblySpeed;
+				});
+			});
+		};
+
+		if (localPlayer.Character) setupCharacter(localPlayer.Character);
+		localPlayer.CharacterAdded.Connect(setupCharacter);
+	}
+}

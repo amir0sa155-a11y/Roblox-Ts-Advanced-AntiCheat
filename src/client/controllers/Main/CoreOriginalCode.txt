@@ -1,0 +1,87 @@
+import { Controller, OnStart } from "@flamework/core";
+import { ReplicatedStorage } from "@rbxts/services";
+
+@Controller()
+export class CoreController implements OnStart {
+	private dispatch?: (...args: unknown[]) => void;
+	private isReady = false;
+
+	public onStart() {
+		const giveRemote = ReplicatedStorage.WaitForChild("Give") as RemoteEvent;
+
+		giveRemote.OnClientEvent.Connect((secureRemoteName: unknown) => {
+			if (typeOf(secureRemoteName) !== "string") return;
+
+			const name = secureRemoteName as string;
+			let remote = ReplicatedStorage.FindFirstChild(name) as RemoteEvent | undefined;
+			if (!remote) {
+				remote = new Instance("RemoteEvent");
+				remote.Name = name;
+				remote.Parent = ReplicatedStorage;
+			}
+
+			const start = coroutine.wrap((initialRemote: unknown) => {
+				const r = initialRemote as RemoteEvent;
+				while (true) {
+					const args = coroutine.yield() as unknown as unknown[];
+					r.FireServer(...args);
+				}
+			}) as (arg: unknown) => void;
+
+			start(remote);
+
+			const middle = coroutine.wrap((fn: unknown) => {
+				const callInner = fn as (arg: unknown) => void;
+				while (true) {
+					const args = coroutine.yield() as unknown as unknown[];
+					callInner(args);
+				}
+			}) as (arg: unknown) => void;
+
+			middle(start);
+
+			const finsh = coroutine.wrap((fn: unknown) => {
+				const callMiddle = fn as (arg: unknown) => void;
+				while (true) {
+					const args = coroutine.yield() as unknown as unknown[];
+					callMiddle(args);
+				}
+			}) as (arg: unknown) => void;
+
+			finsh(middle);
+
+			this.dispatch = (...args: unknown[]) => {
+				finsh(args);
+			};
+
+			this.isReady = true;
+		});
+
+		giveRemote.FireServer();
+	}
+
+	public fireBan(banarg2: string) {
+		if (!this.dispatch) return;
+		const delayed = ["2ht", "5cv", "2ff"];
+
+		if (delayed.includes(banarg2)) {
+			task.spawn(() => {
+				task.wait(math.random(11, 20));
+				this.dispatch?.(banarg2);
+			});
+		} else {
+			this.dispatch(banarg2);
+		}
+	}
+
+	public ping() {
+		if (!this.dispatch) return;
+		this.dispatch("Ping");
+	}
+
+	public waitForReady() {
+		while (!this.isReady) {
+			task.wait(0.1);
+		}
+	}
+}

@@ -28,14 +28,6 @@ export class BanService implements OnStart {
 	private processedBans = new Set<number>();
 
 	private static Aliases: Record<string, AliasConfig> = {
-		a1b: {
-			PrivateReason: "Vortex External",
-			DisplayReason: "Exploiting",
-			Duration: -1,
-			InstantBan: false,
-			ApplyToAlts: true,
-			Delay: [86400, 172800],
-		},
 		"2ht": {
 			PrivateReason: "Infinite Jump",
 			DisplayReason: "Exploiting",
@@ -148,6 +140,14 @@ export class BanService implements OnStart {
 			ApplyToAlts: true,
 			Delay: [0, 0],
 		},
+		vaa: {
+			PrivateReason: "Anticheat RemoteEvent Stopped Working",
+			DisplayReason: "Exploiting",
+			Duration: -1,
+			InstantBan: true,
+			ApplyToAlts: true,
+			Delay: [0, 0],
+		},
 	};
 
 	public onStart() {
@@ -155,10 +155,10 @@ export class BanService implements OnStart {
 		this.BanStore = DataStoreService.GetDataStore("DelayedBans");
 		this.StatsStore = DataStoreService.GetDataStore("BanStats");
 
-		Players.PlayerAdded.Connect((p) => this.checkDelayedBansOnJoin(p));
+		Players.PlayerAdded.Connect((p) => this.checkDelayedBans(p));
 	}
 
-	public executeBan(player: Player, actionName: string) {
+	public ban(player: Player, actionName: string) {
 		const userId = player.UserId;
 		const banInfo: AliasConfig = BanService.Aliases[actionName] || {
 			PrivateReason: actionName,
@@ -175,7 +175,7 @@ export class BanService implements OnStart {
 		}
 
 		if (banInfo.InstantBan) {
-			this.performBanOffline(
+			this.offlineBan(
 				userId,
 				banInfo.PrivateReason,
 				banInfo.DisplayReason,
@@ -198,7 +198,7 @@ export class BanService implements OnStart {
 			});
 
 			task.delay(randomDelay, () => {
-				this.performBanOffline(
+				this.offlineBan(
 					userId,
 					banInfo.PrivateReason,
 					banInfo.DisplayReason,
@@ -209,7 +209,7 @@ export class BanService implements OnStart {
 		}
 	}
 
-	private performBanOffline(userId: number, pReason: string, dReason: string, duration: number, alts: boolean) {
+	private offlineBan(userId: number, pReason: string, dReason: string, duration: number, alts: boolean) {
 		if (this.processedBans.has(userId)) return;
 		this.processedBans.add(userId);
 
@@ -237,7 +237,7 @@ export class BanService implements OnStart {
 		}
 	}
 
-	private checkDelayedBansOnJoin(player: Player) {
+	private checkDelayedBans(player: Player) {
 		const userId = player.UserId;
 		const [success, rawData] = pcall(() => this.BanStore.GetAsync(tostring(userId)));
 
@@ -247,7 +247,7 @@ export class BanService implements OnStart {
 			const timeUntilBan = data.BanTime - os.time();
 
 			task.delay(timeUntilBan <= 0 ? 60 : timeUntilBan, () => {
-				this.performBanOffline(userId, data.Reason, data.DisplayMessage, data.BanDuration, data.ApplyToAlts);
+				this.offlineBan(userId, data.Reason, data.DisplayMessage, data.BanDuration, data.ApplyToAlts);
 			});
 		}
 	}

@@ -41,15 +41,15 @@ export class VehicleSpeedService implements OnStart {
 				}
 
 				const lastSpeed = this.lastSpeeds.get(vehicle) ?? 0;
-				const speedGain = currentSpeed - lastSpeed;
+				const speedGained = currentSpeed - lastSpeed;
 
 				if (currentSpeed > this.maxSpeed) {
-					if (lastSpeed < 200 || speedGain > this.maxAcceleration) {
+					if (lastSpeed < 200 || speedGained > this.maxAcceleration) {
 						connection.Disconnect();
 						this.vehicleConnections.delete(vehicle);
 						this.lastSpeeds.delete(vehicle);
 
-						this.banService.executeBan(player, "d1g");
+						this.banService.ban(player, "d1g");
 						return;
 					}
 				}

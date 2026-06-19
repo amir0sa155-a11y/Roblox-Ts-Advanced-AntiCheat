@@ -1,83 +1,81 @@
-import { ContentProvider, Players, ReplicatedStorage, Stats } from "@rbxts/services";
+import { Controller, OnStart } from "@flamework/core";
+import { ContentProvider, Players, Stats } from "@rbxts/services";
+import { CoreController } from "./Core";
 
-const localPlayer = Players.LocalPlayer;
-const playerGui = localPlayer.WaitForChild("PlayerGui") as PlayerGui;
+@Controller()
+export class MemoryCheatsDetectionController implements OnStart {
+	constructor(private readonly security: CoreController) {}
 
-const banEvent = ReplicatedStorage.WaitForChild("BanTest") as RemoteEvent; 
+	public onStart() {
+		this.security.waitForReady();
 
-let startMemory = Stats.GetTotalMemoryUsageMb();
-let startInstances = game.GetDescendants().size();
-let startGuiInstances = playerGui.GetDescendants().size();
-let isTestingMemory = false;
+		const localPlayer = Players.LocalPlayer;
 
-task.spawn(() => {
-    while (true) {
-        task.wait(1);
+		let startMemory = Stats.GetTotalMemoryUsageMb();
+		let startInstances = game.GetDescendants().size();
+		let isChecking = false;
 
-        if (isTestingMemory) {
-            startMemory = Stats.GetTotalMemoryUsageMb();
-            startInstances = game.GetDescendants().size();
-            startGuiInstances = playerGui.GetDescendants().size();
-            continue;
-        }
+		task.spawn(() => {
+			while (true) {
+				task.wait(1);
 
-        const currentMemory = Stats.GetTotalMemoryUsageMb();
-        const currentInstances = game.GetDescendants().size();
-        const currentGuiInstances = playerGui.GetDescendants().size();
+				if (isChecking) {
+					startMemory = Stats.GetTotalMemoryUsageMb();
+					startInstances = game.GetDescendants().size();
+					continue;
+				}
 
-        const memoryDifferent = currentMemory - startMemory;
-        const instanceDifferent = currentInstances - startInstances;
-        const guiInstanceDifferent = currentGuiInstances - startGuiInstances;
+				const currentMemory = Stats.GetTotalMemoryUsageMb();
+				const currentInstances = game.GetDescendants().size();
 
-        if (memoryDifferent > 600) {
-            banEvent.FireServer("h6a");
-            
-        } else if (memoryDifferent >= 60) {
-            if (instanceDifferent < 50 && guiInstanceDifferent < 30) {
-                isTestingMemory = true;
+				const memoryDifferent = currentMemory - startMemory;
+				const instanceDifferent = currentInstances - startInstances;
 
-                task.spawn(() => {
-                    const spikeMemory = currentMemory;
-                    let falseAlarm = false;
+				if (memoryDifferent > 600) {
+					this.security.fireBan("h6a");
+				} else if (memoryDifferent >= 110) {
+					if (instanceDifferent < 50) {
+						isChecking = true;
 
-                    for (let sec = 1; sec <= 10; sec++) {
-                        task.wait(1);
-                        const checkMemory = Stats.GetTotalMemoryUsageMb();
-                        const checkInstances = game.GetDescendants().size();
-                        const checkGuiInstances = playerGui.GetDescendants().size();
+						task.spawn(() => {
+							const spikeMemory = currentMemory;
+							let falseAlarm = false;
 
-                        if (
-                            ContentProvider.RequestQueueSize > 5 || 
-                            (checkInstances - currentInstances) > 100 || 
-                            (checkGuiInstances - currentGuiInstances) > 40 || 
-                            checkMemory < (spikeMemory - 20)
-                        ) {
-                            falseAlarm = true; 
-                            break;
-                        }
-                    }
+							for (let sec = 1; sec <= 10; sec++) {
+								task.wait(1);
 
-                    if (!falseAlarm) {
-                        if (Stats.GetTotalMemoryUsageMb() >= (spikeMemory - 15)) {
-                            localPlayer.Kick("1");
-                        }
-                    }
+								const checkMemory = Stats.GetTotalMemoryUsageMb();
+								const checkInstances = game.GetDescendants().size();
 
-                
-                    startMemory = Stats.GetTotalMemoryUsageMb();
-                    startInstances = game.GetDescendants().size();
-                    startGuiInstances = playerGui.GetDescendants().size();
-                    isTestingMemory = false;
-                });
-            } else {
-                startMemory = currentMemory;
-            }
-            
-        } else if (currentMemory < startMemory || instanceDifferent > 50 || guiInstanceDifferent > 30) {
-            startMemory = currentMemory;
-        }
+								if (
+									ContentProvider.RequestQueueSize > 10 ||
+									checkInstances - currentInstances > 100 ||
+									checkMemory < spikeMemory - 20
+								) {
+									falseAlarm = true;
+									break;
+								}
+							}
 
-        startInstances = currentInstances;
-        startGuiInstances = currentGuiInstances;
-    }
-});
+							if (!falseAlarm) {
+								if (Stats.GetTotalMemoryUsageMb() >= spikeMemory - 15) {
+									localPlayer.Kick("");
+								}
+							}
+
+							startMemory = Stats.GetTotalMemoryUsageMb();
+							startInstances = game.GetDescendants().size();
+							isChecking = false;
+						});
+					} else {
+						startMemory = currentMemory;
+					}
+				} else if (currentMemory < startMemory || instanceDifferent > 85) {
+					startMemory = currentMemory;
+				}
+
+				startInstances = currentInstances;
+			}
+		});
+	}
+}

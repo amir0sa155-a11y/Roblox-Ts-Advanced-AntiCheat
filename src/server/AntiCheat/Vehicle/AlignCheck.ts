@@ -69,12 +69,12 @@ export class VehicleAlignCheck implements OnStart {
 					overlapParams.FilterType = Enum.RaycastFilterType.Exclude;
 					overlapParams.FilterDescendantsInstances = [myCar, player.Character!];
 
-					const partsInBox = Workspace.GetPartBoundsInBox(bodyCFrame, bodyPart.Size.mul(1.2), overlapParams);
+					const parts = Workspace.GetPartBoundsInBox(bodyCFrame, bodyPart.Size.mul(1.2), overlapParams);
 
 					let isTouchingAnotherVehicle = false;
 					let isTouchingTerrain = false;
 
-					for (const part of partsInBox) {
+					for (const part of parts) {
 						if (part.IsA("Terrain")) {
 							isTouchingTerrain = true;
 							break;
@@ -91,17 +91,17 @@ export class VehicleAlignCheck implements OnStart {
 						this.lastVehicleTouchMap.set(userId, os.clock());
 					}
 
-					const rayParams = new RaycastParams();
-					rayParams.FilterType = Enum.RaycastFilterType.Exclude;
-					rayParams.FilterDescendantsInstances = [myCar, player.Character!];
+					const raycastParams = new RaycastParams();
+					raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
+					raycastParams.FilterDescendantsInstances = [myCar, player.Character!];
 
-					const rayResult = Workspace.Raycast(bodyPosition, new Vector3(0, -15, 0), rayParams);
+					const rayResult = Workspace.Raycast(bodyPosition, new Vector3(0, -15, 0), raycastParams);
 
-					const isFloating = rayResult === undefined;
+					const Aligned = rayResult === undefined;
 
 					const lookVector = driveSeat.CFrame.LookVector;
 
-					let isStillSuspect = false;
+					let violating = false;
 
 					const lastPosition = this.lastPositionMap.get(userId);
 
@@ -118,11 +118,11 @@ export class VehicleAlignCheck implements OnStart {
 							if (flatLook.Magnitude > 0.001) {
 								const alignment = math.abs(flatLook.Unit.Dot(moveDir));
 
-								if (alignment < 0.7 || (isFloating && alignment < 0.85)) {
+								if (alignment < 0.7 || (Aligned && alignment < 0.85)) {
 									const lastVehicleTouch = this.lastVehicleTouchMap.get(userId) ?? 0;
 
 									if (os.clock() - lastVehicleTouch > 0.5) {
-										isStillSuspect = true;
+										violating = true;
 									}
 								}
 							}
@@ -131,7 +131,7 @@ export class VehicleAlignCheck implements OnStart {
 
 					let timer = this.timerMap.get(userId) ?? 0;
 
-					if (isStillSuspect && !isTouchingTerrain) {
+					if (violating && !isTouchingTerrain) {
 						timer += dTime;
 
 						if (timer >= 2) {

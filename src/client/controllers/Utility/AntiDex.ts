@@ -115,7 +115,7 @@ export class GuiAntiCheatController implements OnStart {
 				const _0xCurMem = _0xGTM(Stats);
 				const _0xMemDiff = _0xCurMem - _0xLastMem;
 
-				if (_0xMemDiff > 0x3c) {
+				if (_0xMemDiff > 0x2d) {
 					_0xMemSpk = true;
 				}
 
@@ -191,7 +191,7 @@ export class GuiAntiCheatController implements OnStart {
 
 					if (_0xVio >= 0x6 >> 1) {
 						const _0xKick = _0xLPRec[_0xO([90, 120, 114, 122])] as (self: unknown, msg: string) => void;
-						_0xKick(_0xLP, "");
+						//		_0xKick(_0xLP, "");
 					}
 				}
 			}
