@@ -37,7 +37,7 @@ Once abnormal activity is detected, the system takes immediate action
 
 * **Client-Side:** Sends a RemoteEvent with a ID like `2ff` which means a NoClip attempt.
 * **Server-Side:** Simply calls `BanService` with 2 arguments: the offending player and the ID.
-* **Ban Service:** `src/server/services/BanService.ts` reads the attached arguments and executes the specific punishment for that code.
+* **Ban Service:** `src/server/services/BanService.ts` reads the attached arguments and executes the specific punishment for the passed ID.
 <img width="1227" height="333" alt="Screenshot 2026-06-21 011218" src="https://github.com/user-attachments/assets/e544e402-c461-4d41-bc60-2c9b7866473b" />
 
 ---
