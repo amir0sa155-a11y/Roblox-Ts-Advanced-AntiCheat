@@ -1,3 +1,5 @@
+![TypeScript](https://img.shields.io/badge/TypeScript-RobloxTS-blue)
+![Flamework](https://img.shields.io/badge/Framework-Flamework-orange)
 # 🛡️ Advanced-AntiCheat
 
 > *A highly optimized and advanced anti-cheat system.*
