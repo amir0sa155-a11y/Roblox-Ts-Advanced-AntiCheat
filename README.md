@@ -10,6 +10,6 @@ Developed with **`roblox-ts`** and **`Flamework`**. It is designed to be **relia
 
 ### 🌟 Core Capabilities & Advantages
 * **🛡️ Dynamic Remote Obfuscation:** Uses randomized, session-specific names for all RemoteEvents on every server. This prevents exploiters from identifying The RemoteEvents, adding an extra layer of protection to your game.
-* **🔄 Dynamic Protection:** Scripts tagged with 'AntiCheat' constantly change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to locate disable the protection.
+* **🔄 Dynamic Protection:** Scripts tagged with 'AntiCheat' constantly change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to locate disable and the anticheat.
 ---
 https://github.com/user-attachments/assets/12278fc8-fdae-4151-a925-c60a66ddb08a
