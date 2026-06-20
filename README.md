@@ -1,9 +1,4 @@
 
-
-Uploading ObfuscationFiles.mp4…
-
-
-
 <div align="center">
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-RobloxTS-blue?style=for-the-badge)
@@ -29,5 +24,8 @@ https://github.com/user-attachments/assets/84417db7-1dbe-4027-a950-1639c04d417d
 * **🔄 Dynamic Script Protection**
   Scripts tagged with `AntiCheat` continuously  change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to locate and disable the anticheat.
 
+https://github.com/user-attachments/assets/615dc8a1-181c-4b55-bfe2-6c5146522151
 
+---
+  
 https://github.com/user-attachments/assets/12278fc8-fdae-4151-a925-c60a66ddb08a
