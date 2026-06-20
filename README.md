@@ -1,15 +1,29 @@
-![TypeScript](https://img.shields.io/badge/TypeScript-RobloxTS-blue)
-![Flamework](https://img.shields.io/badge/Framework-Flamework-orange)
+
+
+<div align="center">
+
+![TypeScript](https://img.shields.io/badge/TypeScript-RobloxTS-blue?style=for-the-badge)
+![Flamework](https://img.shields.io/badge/Framework-Flamework-orange?style=for-the-badge)
+
 # 🛡️ Advanced-AntiCheat
 
-> *A highly optimized and advanced anti-cheat system.*
+> *A highly optimized, reliable, and advanced anti-cheat system.*
 
-Developed with **`roblox-ts`** and **`Flamework`**. It is designed to be **reliable**, highly effective against exploits, and has been thoroughly tested in production to guarantee **zero false positives**.
+</div>
+
+Developed utilizing **`roblox-ts`** and **`Flamework`**, this system is meticulously designed to be highly effective against exploits. It has been thoroughly tested in production environments to guarantee **zero false positives** while maintaining peak  performance.
 
 ---
 
-### 🌟 Core Capabilities & Advantages
-* **🛡️ Dynamic Remote Obfuscation:** Uses randomized, session-specific names for all RemoteEvents on every server. This prevents exploiters from identifying The RemoteEvents, adding an extra layer of protection to your game.
-* **🔄 Dynamic Protection:** Scripts tagged with 'AntiCheat' constantly change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to locate disable and the anticheat.
----
+## 🌟 Core Capabilities & Advantages
+
+* **🛡️ Dynamic Remote Obfuscation**
+  Utilizes randomized, session-specific names for all `RemoteEvents` across every server. This effectively prevents exploiters from identifying network events, adding an essential layer of protection
+
+* **🔄 Dynamic Script Protection**
+  Scripts tagged with `AntiCheat` continuously shift their names and hierarchical locations. This active camouflage keeps the core logic hidden, making it nearly impossible for exploiters to track, locate, or disable the protection system.
+
+
 https://github.com/user-attachments/assets/12278fc8-fdae-4151-a925-c60a66ddb08a
+
+https://github.com/user-attachments/assets/84417db7-1dbe-4027-a950-1639c04d417d
