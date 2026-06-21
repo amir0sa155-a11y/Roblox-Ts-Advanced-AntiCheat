@@ -27,8 +27,9 @@ Designed to be **reliable**, highly effective against exploits, and thoroughly t
 > Automatically catches any hidden or unauthorized scripts that consume abnormally high memory.
 
 ---
+> [!NOTE]
+This project includes many more detections that are not listed here. You can explore the full codebase directly inside the `src` directory.
 
-> 💡 **Note:** This project includes many more detections that are not listed here. You can explore the full codebase directly inside the `src` directory.
 
 ---
 
@@ -75,9 +76,8 @@ All client-sided scripts are fully obfuscated. Of course, this will not stop hac
 </div>
 
 ---
-
+> [!WARNING]
+> This repository is only for showcase purposes. Please do not use, copy, any part of this project without my permission.
 <div align="center">
-
-<sub>Made for developers who take AntiCheat Systems seriously.</sub>
 
 </div>
