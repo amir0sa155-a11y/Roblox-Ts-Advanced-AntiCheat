@@ -6,8 +6,8 @@ export class CoreGuiController implements OnStart {
 	public static Ready = false;
 
 	public onStart() {
-		StarterGui.SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false);
-		StarterGui.SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false);
+		StarterGui.SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
+
 		CoreGuiController.Ready = true;
 	}
 }
