@@ -132,7 +132,7 @@ https://github.com/user-attachments/assets/84417db7-1dbe-4027-a950-1639c04d417d
 
 ### 🔄 Dynamic Script Protection
 
-Scripts tagged with `AntiCheat` continuously change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to locate and disable the anticheat.
+Scripts tagged with `AntiCheat` continuously change their names and locations. This keeps them hidden, making it impossible for exploiters to track them. This provides an extra layer of protection, since many exploits require a fixed target to disable the anticheat.
 
 <div align="center">
 
