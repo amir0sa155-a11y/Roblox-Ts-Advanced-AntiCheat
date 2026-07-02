@@ -1,7 +1,7 @@
 import { CoreController } from "../Main/Core";
 import { Controller, OnStart } from "@flamework/core";
-import { Players, HttpService, UserInputService, Stats, GuiService, Workspace } from "@rbxts/services";
-import { CoreGuiController } from "./GuiAntiCheatController";
+import { Players, HttpService, UserInputService, GuiService, Workspace, RunService } from "@rbxts/services";
+import { CoreGuiController } from "./CoreGuiHide";
 
 @Controller()
 export class GuiAntiCheatController implements OnStart {
@@ -16,26 +16,228 @@ export class GuiAntiCheatController implements OnStart {
 		if (!localPlayer) return;
 
 		const playerGui = localPlayer.WaitForChild("PlayerGui") as PlayerGui;
+		const camera = Workspace.CurrentCamera || (Workspace.WaitForChild("Camera") as Camera);
+
+		const CheckUi = (ui: Instance, expectedParent: Instance, isScreenGui: boolean) => {
+			ui.AncestryChanged.Connect((_, newParent) => {
+				if (newParent !== expectedParent) {
+					this.security.fireBan("lb1");
+				}
+			});
+
+			task.spawn(() => {
+				while (ui.Parent === expectedParent) {
+					task.wait(0.6);
+					ui.Name = HttpService.GenerateGUID(false);
+					if (isScreenGui) {
+						(ui as ScreenGui).DisplayOrder = math.random(85, 115);
+					} else {
+						(ui as GuiObject).ZIndex = math.random(85, 115);
+					}
+				}
+			});
+		};
+
+		const size = 44;
+		const targetSize = 36.5;
+		const Height = 52;
+		const minWidth = 160;
+		const maxShownDropDowns = 6;
+		const margin = 12;
+		const dropdownPositionX = 16;
+		const dropdownPositionY = size - 38;
+
+		const screenGui = new Instance("ScreenGui");
+		screenGui.Name = HttpService.GenerateGUID(false);
+		screenGui.ResetOnSpawn = false;
+		screenGui.IgnoreGuiInset = false;
+		screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+		screenGui.Parent = playerGui;
+		CheckUi(screenGui, playerGui, true);
+
+		const container = new Instance("Frame");
+		container.Name = HttpService.GenerateGUID(false);
+		container.AnchorPoint = new Vector2(0.5, 0.5);
+		container.Position = UDim2.fromOffset(76.6 + targetSize / 2, -42.3 + targetSize / 2);
+		container.Size = UDim2.fromOffset(targetSize, targetSize);
+		container.BackgroundTransparency = 1;
+		container.Parent = screenGui;
+		CheckUi(container, screenGui, false);
+
+		const ratio = new Instance("UIAspectRatioConstraint");
+		ratio.AspectRatio = 1;
+		ratio.AspectType = Enum.AspectType.ScaleWithParentSize;
+		ratio.Parent = container;
+
+		const button = new Instance("TextButton");
+		button.Name = HttpService.GenerateGUID(false);
+		button.Size = UDim2.fromScale(1, 1);
+		button.BackgroundTransparency = 1;
+		button.TextTransparency = 1;
+		button.Parent = container;
+		CheckUi(button, container, false);
+
+		const dropdown = new Instance("Frame");
+		dropdown.Name = HttpService.GenerateGUID(false);
+		dropdown.AutomaticSize = Enum.AutomaticSize.X;
+		dropdown.AnchorPoint = new Vector2(0, 0);
+		dropdown.Position = UDim2.fromOffset(dropdownPositionX, dropdownPositionY);
+		dropdown.Size = UDim2.fromOffset(0, 0);
+		dropdown.ClipsDescendants = true;
+		dropdown.BackgroundTransparency = 1;
+		dropdown.Visible = false;
+		dropdown.Parent = screenGui;
+		CheckUi(dropdown, screenGui, false);
+
+		const Corner = new Instance("UICorner");
+		Corner.CornerRadius = new UDim(50, 50);
+		Corner.Parent = button;
+
+		const Corner2 = new Instance("UICorner");
+		Corner2.CornerRadius = new UDim(50, 50);
+		Corner2.Parent = container;
+
+		const scroller = new Instance("ScrollingFrame");
+		scroller.Name = HttpService.GenerateGUID(false);
+		scroller.AutomaticSize = Enum.AutomaticSize.X;
+		scroller.AutomaticCanvasSize = Enum.AutomaticSize.Y;
+		scroller.Position = UDim2.fromOffset(0, 0);
+		scroller.Size = UDim2.fromOffset(0, 0);
+		scroller.CanvasSize = UDim2.fromOffset(0, 0);
+		scroller.ScrollingEnabled = true;
+		scroller.VerticalScrollBarInset = Enum.ScrollBarInset.None;
+		scroller.BackgroundTransparency = 1;
+		scroller.ScrollBarImageTransparency = 1;
+		scroller.Parent = dropdown;
+		CheckUi(scroller, dropdown, false);
+
+		const scrollerPadding = new Instance("UIPadding");
+		scrollerPadding.PaddingTop = new UDim(0, 6);
+		scrollerPadding.PaddingBottom = new UDim(0, 6);
+		scrollerPadding.Parent = scroller;
+
+		const listLayout = new Instance("UIListLayout");
+		listLayout.FillDirection = Enum.FillDirection.Vertical;
+		listLayout.SortOrder = Enum.SortOrder.LayoutOrder;
+		listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center;
+		listLayout.Padding = new UDim(0, 2);
+		listLayout.Parent = scroller;
+
+		let isMenuOpen = false;
+		const ButtonsCount: TextButton[] = [];
+
+		const createMenuButton = (): TextButton => {
+			const button = new Instance("TextButton");
+			button.Name = HttpService.GenerateGUID(false);
+			button.AutomaticSize = Enum.AutomaticSize.X;
+			button.Size = UDim2.fromOffset(0, Height);
+			button.LayoutOrder = ButtonsCount.size() + 1;
+			button.BackgroundTransparency = 1;
+			button.TextTransparency = 1;
+			button.Parent = scroller;
+
+			const constraint = new Instance("UISizeConstraint");
+			constraint.MinSize = new Vector2(minWidth, Height);
+			constraint.Parent = button;
+
+			const paddding = new Instance("UIPadding");
+			paddding.PaddingLeft = new UDim(0, 16);
+			paddding.PaddingRight = new UDim(0, 16);
+			paddding.Parent = button;
+
+			CheckUi(button, scroller, false);
+
+			ButtonsCount.push(button);
+			return button;
+		};
+
+		const geHeight = (): number => {
+			const available = camera.ViewportSize.Y - dropdownPositionY - margin;
+			return math.max(available, Height);
+		};
+
+		const computeHeight = (): number => {
+			const visibleItems: TextButton[] = [];
+			for (const button of ButtonsCount) {
+				if (button.Visible) {
+					visibleItems.push(button);
+				}
+			}
+			const count = math.min(visibleItems.size(), maxShownDropDowns);
+			let height = scrollerPadding.PaddingTop.Offset + scrollerPadding.PaddingBottom.Offset;
+
+			for (let i = 0; i < count; i++) {
+				height += visibleItems[i].AbsoluteSize.Y;
+				if (i < count - 1) {
+					height += listLayout.Padding.Offset;
+				}
+			}
+			return math.min(height, geHeight());
+		};
+
+		const getWidth = (): number => {
+			const rawWidth = scroller.AbsoluteSize.X;
+			const maxWidth = camera.ViewportSize.X - dropdownPositionX - margin;
+			return math.clamp(rawWidth, 0, maxWidth);
+		};
+
+		const changesize = (): void => {
+			if (!isMenuOpen) {
+				return;
+			}
+			RunService.Heartbeat.Wait();
+			const width = getWidth();
+			const height = computeHeight();
+			dropdown.Size = UDim2.fromOffset(width, height);
+		};
+
+		const openDropdown = (): void => {
+			isMenuOpen = true;
+			dropdown.Visible = true;
+			changesize();
+		};
+
+		const closeDropdown = (): void => {
+			isMenuOpen = false;
+			dropdown.Visible = false;
+		};
+
+		scroller.ChildAdded.Connect(() => changesize());
+		scroller.ChildRemoved.Connect(() => changesize());
+		camera.GetPropertyChangedSignal("ViewportSize").Connect(() => changesize());
+
+		createMenuButton();
+		createMenuButton();
+		createMenuButton();
+		createMenuButton();
+
+		let lastSafeClick = 0;
+
+		const trackedUis = (ui: Instance) => {
+			if (ui.IsA("GuiObject")) {
+				ui.InputBegan.Connect((input) => {
+					if (
+						input.UserInputType === Enum.UserInputType.MouseButton1 ||
+						input.UserInputType === Enum.UserInputType.Touch
+					) {
+						lastSafeClick = os.clock();
+					}
+				});
+			}
+		};
+
+		for (const ui of playerGui.GetDescendants()) {
+			trackedUis(ui);
+		}
+
+		playerGui.DescendantAdded.Connect(trackedUis);
+
 		const Gui = new Instance("ScreenGui");
 		Gui.Parent = playerGui;
 		Gui.Name = HttpService.GenerateGUID(false);
 		Gui.IgnoreGuiInset = false;
 		Gui.ResetOnSpawn = false;
-		Gui.DisplayOrder = 100;
-
-		Gui.AncestryChanged.Connect((_, newParent) => {
-			if (newParent !== playerGui) {
-				this.security.fireBan("lb1");
-			}
-		});
-
-		task.spawn(() => {
-			while (Gui.Parent === playerGui) {
-				task.wait(0.6);
-				Gui.Name = HttpService.GenerateGUID(false);
-				Gui.DisplayOrder = math.random(100 - 15, 100 + 15);
-			}
-		});
+		CheckUi(Gui, playerGui, true);
 
 		const frames: Frame[] = [];
 
@@ -50,57 +252,46 @@ export class GuiAntiCheatController implements OnStart {
 			frame.Position = position;
 			frame.Parent = Gui;
 
-			frame.AncestryChanged.Connect((_, newParent) => {
-				if (newParent !== Gui) {
-					this.security.fireBan("lb1");
-				}
-			});
+			CheckUi(frame, Gui, false);
 
 			frames.push(frame);
 			return frame;
 		};
 
-		const isPC = UserInputService.KeyboardEnabled && UserInputService.MouseEnabled;
-		const isMobile = UserInputService.TouchEnabled && !UserInputService.KeyboardEnabled;
-
-		createFrame(new UDim2(0.74, 0, 0.65, 0), new UDim2(0.26, 0, 0, 0));
-		const targetSearchFrame = createFrame(new UDim2(0.185, 0, 0.35, 0), new UDim2(0.816, 0, 0.65, 0));
-
-		if (isPC) {
-			createFrame(new UDim2(0.26, 0, 0.236, 0), new UDim2(0, 0, 0.414, 0));
-			createFrame(new UDim2(0.821, 0, 0.351, 0), new UDim2(-0.006, 0, 0.65, 0));
-		}
-
-		if (isMobile) {
-			createFrame(new UDim2(0.245, 0, 0.65, 0), new UDim2(0.572, 0, 0.359, 0));
-		}
+		createFrame(new UDim2(1, 0, 0.65, 0), new UDim2(0, 0, 0, 0));
+		const targetSearchFrame = createFrame(new UDim2(0.28, 0, 0.27, 0), new UDim2(0.72, 0, 0.65, 0));
+		createFrame(new UDim2(0.28, 0, 0.08, 0), new UDim2(0.72, 0, 0.92, 0));
+		createFrame(new UDim2(0.72, 0, 0.35, 0), new UDim2(0, 0, 0.65, 0));
 
 		const circle = new Instance("Frame");
 		circle.BackgroundColor3 = new Color3(0, 1, 0);
+		circle.BackgroundTransparency = 1;
 		circle.AnchorPoint = new Vector2(0.5, 0.5);
 		circle.Position = new UDim2(0.5, 0, 0.5, 0);
-		circle.Visible = false;
+		circle.Visible = true;
 		circle.Parent = Gui;
+
+		CheckUi(circle, Gui, false);
 
 		const uiCorner = new Instance("UICorner");
 		uiCorner.CornerRadius = new UDim(0.5, 0);
 		uiCorner.Parent = circle;
 
-		const MAX_RADIUS_PC = 203;
-		const MOBILE_SCALE = 0.45;
+		const Radius = 203;
+		const mobilescale = 0.45;
 
 		const updateVisualizer = () => {
-			const camera = Workspace.CurrentCamera;
-			if (camera) {
-				const radius = math.min(MAX_RADIUS_PC, camera.ViewportSize.Y * MOBILE_SCALE);
+			const cam = Workspace.CurrentCamera;
+			if (cam) {
+				const radius = math.min(Radius, cam.ViewportSize.Y * mobilescale);
 				const diameter = radius * 2;
 				circle.Size = new UDim2(0, diameter, 0, diameter);
 			}
 		};
 
-		const camera = Workspace.CurrentCamera;
-		if (camera) {
-			camera.GetPropertyChangedSignal("ViewportSize").Connect(updateVisualizer);
+		const mainCamera = Workspace.CurrentCamera;
+		if (mainCamera) {
+			mainCamera.GetPropertyChangedSignal("ViewportSize").Connect(updateVisualizer);
 			updateVisualizer();
 		}
 
@@ -144,7 +335,6 @@ export class GuiAntiCheatController implements OnStart {
 					tracking = false;
 					return;
 				}
-
 				const Sstring = UserInputService.GetStringForKeyCode(key.KeyCode);
 				if (Sstring) {
 					if (Sstring !== "") {
@@ -161,22 +351,15 @@ export class GuiAntiCheatController implements OnStart {
 			}
 
 			const position = key.Position;
+			const hoveredGuis = playerGui.GetGuiObjectsAtPosition(position.X, position.Y);
+
 			let isInsideFrame = false;
 			let clickedTargetFRAME = false;
 
-			for (const frame of frames) {
-				const APosition = frame.AbsolutePosition;
-				const size = frame.AbsoluteSize;
-
-				const inside =
-					position.X >= APosition.X &&
-					position.X <= APosition.X + size.X &&
-					position.Y >= APosition.Y &&
-					position.Y <= APosition.Y + size.Y;
-
-				if (inside) {
+			for (const ui of hoveredGuis) {
+				if (frames.includes(ui as Frame)) {
 					isInsideFrame = true;
-					if (frame === targetSearchFrame) {
+					if (ui === targetSearchFrame) {
 						clickedTargetFRAME = true;
 					}
 					break;
@@ -194,45 +377,51 @@ export class GuiAntiCheatController implements OnStart {
 
 			if (isInsideFrame) {
 				if (gp) {
-					const guiObjectsInMouse = playerGui.GetGuiObjectsAtPosition(position.X, position.Y);
-					let ClickedGuiIsaGAMEGUI = false;
+					const timeSinceLastSafeClick = os.clock() - lastSafeClick;
+					const clickedGameUI = timeSinceLastSafeClick < 0.1;
 
-					for (const obj of guiObjectsInMouse) {
-						if (obj.IsA("GuiObject")) {
-							if (obj.Active) {
-								if (!frames.includes(obj as Frame)) {
-									ClickedGuiIsaGAMEGUI = true;
-									break;
-								}
-							}
-						}
+					if (clickedGameUI) {
+						return;
 					}
 
 					if (GuiService.GetEmotesMenuOpen()) {
-						const framePosition = circle.AbsolutePosition;
-						const frameSize = circle.AbsoluteSize;
-
-						const centerX = framePosition.X + frameSize.X / 2;
-						const centerY = framePosition.Y + frameSize.Y / 2;
-						const radius = frameSize.X / 2;
-
-						const distance = new Vector2(position.X - centerX, position.Y - centerY).Magnitude;
-
-						if (distance <= radius) {
+						if (hoveredGuis.includes(circle)) {
 							return;
 						}
 					}
 
-					if (clickedTargetFRAME) {
-						tracking = true;
-						trackedText = "";
+					let SkipViolation = false;
+
+					if (isMenuOpen) {
+						for (const ui of hoveredGuis) {
+							if (ui === dropdown || ui.IsDescendantOf(dropdown)) {
+								SkipViolation = true;
+								break;
+							}
+						}
 					}
 
-					if (!clickedTargetFRAME) {
-						violations += 1;
-						if (violations >= 3) {
-							localPlayer.Kick("");
+					if (!SkipViolation) {
+						if (clickedTargetFRAME) {
+							tracking = true;
+							trackedText = "";
+						} else {
+							violations += 1;
+							if (violations >= 3) {
+								localPlayer.Kick("");
+							}
 						}
+					}
+				}
+			}
+
+			if (isMenuOpen) {
+				closeDropdown();
+			} else {
+				for (const ui of hoveredGuis) {
+					if (ui === button) {
+						openDropdown();
+						break;
 					}
 				}
 			}

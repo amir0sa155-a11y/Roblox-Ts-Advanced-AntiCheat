@@ -7,7 +7,7 @@ export class CoreGuiController implements OnStart {
 
 	public onStart() {
 		StarterGui.SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
-
 		CoreGuiController.Ready = true;
 	}
 }
+	

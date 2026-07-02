@@ -9,7 +9,7 @@
 		"ttttt:out/client/controllers/Main/ObfuscationController@ObfuscationController": "client/controllers/Main/ObfuscationController@ObfuscationController",
 		"ttttt:out/client/controllers/Main/VehicleAntiCheatController@VehicleAntiCheatController": "client/controllers/Main/VehicleAntiCheatController@VehicleAntiCheatController",
 		"ttttt:out/client/controllers/Utility/GuiAntiCheatController@CoreGuiController": "client/controllers/Utility/GuiAntiCheatController@CoreGuiController",
-		"ttttt:out/client/controllers/Utility/AntiDexOriginalCode@GuiAntiCheatController": "client/controllers/Utility/AntiDexOriginalCode@GuiAntiCheatController",
+		"ttttt:out/client/controllers/Utility/AntiCoreGui@GuiAntiCheatController": "client/controllers/Utility/AntiCoreGui@GuiAntiCheatController",
 		"ttttt:out/server/AntiCheat/Character/AntiCheat@AntiCheatService": "server/AntiCheat/Character/AntiCheat@AntiCheatService",
 		"ttttt:out/server/AntiCheat/Utility/RemoteManager@AntiCheatRemoteService": "server/AntiCheat/Utility/RemoteManager@AntiCheatRemoteService",
 		"ttttt:out/server/AntiCheat/Vehicle/AlignCheck@VehicleAlignCheck": "server/AntiCheat/Vehicle/AlignCheck@VehicleAlignCheck",
@@ -19,7 +19,8 @@
 		"ttttt:out/server/services/BanService@BanService": "server/services/BanService@BanService",
 		"ttttt:out/server/AntiCheat/Vehicle/VehicleFlingCheck@VehicleSpeedService": "server/AntiCheat/Vehicle/VehicleFlingCheck@VehicleSpeedService",
 		"ttttt:out/server/services/AwaitService@AntiCheatRemoteService": "server/services/AwaitService@AntiCheatRemoteService",
-		"ttttt:out/server/services/SpawnService@VehicleSpawnService": "server/services/SpawnService@VehicleSpawnService"
+		"ttttt:out/server/services/SpawnService@VehicleSpawnService": "server/services/SpawnService@VehicleSpawnService",
+		"ttttt:out/client/controllers/Utility/CoreGuiHide@CoreGuiController": "client/controllers/Utility/CoreGuiHide@CoreGuiController"
 	},
 	"metadata": {}
 }
