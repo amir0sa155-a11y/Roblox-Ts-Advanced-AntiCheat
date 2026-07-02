@@ -31,18 +31,19 @@ export class VehicleAlignCheck implements OnStart {
 
 				if (os.clock() - joinTime < 1) continue;
 
-				const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
+				const car = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
 
-				if (!myCar) {
+				if (!car) {
 					this.lastPositionMap.delete(userId);
 					this.timerMap.set(userId, 0);
 					continue;
 				}
 
-				const driveSeat = (myCar.FindFirstChild("DriveSeat", true) ??
-					myCar.FindFirstChildWhichIsA("VehicleSeat", true)) as VehicleSeat | undefined;
+				const driveSeat = (car.FindFirstChild("DriveSeat") ?? car.FindFirstChildWhichIsA("VehicleSeat")) as
+					| VehicleSeat
+					| undefined;
 
-				const bodyFolderOrPart = myCar.FindFirstChild("Body", true);
+				const bodyFolderOrPart = car.FindFirstChild("Body");
 
 				let bodyPart: BasePart | undefined;
 
@@ -67,7 +68,7 @@ export class VehicleAlignCheck implements OnStart {
 
 					const overlapParams = new OverlapParams();
 					overlapParams.FilterType = Enum.RaycastFilterType.Exclude;
-					overlapParams.FilterDescendantsInstances = [myCar, player.Character!];
+					overlapParams.FilterDescendantsInstances = [car, player.Character!];
 
 					const parts = Workspace.GetPartBoundsInBox(bodyCFrame, bodyPart.Size.mul(1.2), overlapParams);
 
@@ -81,7 +82,7 @@ export class VehicleAlignCheck implements OnStart {
 						}
 
 						if (part.CanCollide && part.Transparency !== 1) {
-							if (part.IsDescendantOf(this.vehiclesFolder) && !part.IsDescendantOf(myCar)) {
+							if (part.IsDescendantOf(this.vehiclesFolder) && !part.IsDescendantOf(car)) {
 								isTouchingAnotherVehicle = true;
 							}
 						}
@@ -93,7 +94,7 @@ export class VehicleAlignCheck implements OnStart {
 
 					const raycastParams = new RaycastParams();
 					raycastParams.FilterType = Enum.RaycastFilterType.Exclude;
-					raycastParams.FilterDescendantsInstances = [myCar, player.Character!];
+					raycastParams.FilterDescendantsInstances = [car, player.Character!];
 
 					const rayResult = Workspace.Raycast(bodyPosition, new Vector3(0, -15, 0), raycastParams);
 

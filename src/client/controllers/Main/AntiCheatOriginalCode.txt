@@ -47,7 +47,7 @@ export class AntiCheatController implements OnStart {
 			});
 		});
 
-		const setupAntiCheat = (character: Model) => {
+		const startanticheat = (character: Model) => {
 			const humanoid = character.WaitForChild("Humanoid") as Humanoid;
 
 			for (const part of character.GetChildren()) {
@@ -104,11 +104,11 @@ export class AntiCheatController implements OnStart {
 		};
 
 		if (LocalPlayer.Character) {
-			setupAntiCheat(LocalPlayer.Character);
+			startanticheat(LocalPlayer.Character);
 		}
 
 		LocalPlayer.CharacterAdded.Connect((character) => {
-			setupAntiCheat(character);
+			startanticheat(character);
 		});
 	}
 }

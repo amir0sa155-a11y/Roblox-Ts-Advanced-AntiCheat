@@ -22,17 +22,17 @@ export class VehicleNoclipCheck implements OnStart {
 			this.overlapParams.FilterDescendantsInstances = filterList;
 
 			for (const player of Players.GetPlayers()) {
-				const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
-				if (!myCar) {
+				const car = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
+				if (!car) {
 					this.noclipTimers.delete(player);
 					continue;
 				}
 
-				const driveSeat = (myCar.FindFirstChild("DriveSeat") ?? myCar.FindFirstChildWhichIsA("VehicleSeat")) as
+				const driveSeat = (car.FindFirstChild("DriveSeat") ?? car.FindFirstChildWhichIsA("VehicleSeat")) as
 					| VehicleSeat
 					| undefined;
 
-				let body = myCar.FindFirstChild("Body", true);
+				let body = car.FindFirstChild("Body", true);
 
 				if (body && !body.IsA("BasePart")) {
 					body = body.FindFirstChild("Body") ?? body.FindFirstChildWhichIsA("BasePart");
@@ -53,16 +53,16 @@ export class VehicleNoclipCheck implements OnStart {
 
 				const parts = Workspace.GetPartBoundsInBox(checkCFrame, checkSize, this.overlapParams);
 
-				let isNoClip = false;
+				let isNoClipping = false;
 
 				for (const hitPart of parts) {
 					if (hitPart.IsA("Terrain") || (hitPart.IsA("BasePart") && hitPart.CanCollide)) {
-						isNoClip = true;
+						isNoClipping = true;
 						break;
 					}
 				}
 
-				if (isNoClip) {
+				if (isNoClipping) {
 					const startTime = this.noclipTimers.get(player);
 					if (startTime !== undefined) {
 						if (os.clock() - startTime >= 1.5) {

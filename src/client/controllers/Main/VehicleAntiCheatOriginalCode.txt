@@ -11,7 +11,7 @@ export class VehicleAntiCheatController implements OnStart {
 
 		const localPlayer = Players.LocalPlayer;
 
-		const setupCharacter = (character: Model) => {
+		const setup = (character: Model) => {
 			const humanoid = character.WaitForChild("Humanoid") as Humanoid;
 
 			let heartbeatConnection: RBXScriptConnection | undefined;
@@ -32,13 +32,13 @@ export class VehicleAntiCheatController implements OnStart {
 				const vehicleSeat = seat as VehicleSeat;
 				const vehiclesFolder = Workspace.FindFirstChild("Vehicles");
 				const playerVehicle = vehiclesFolder?.FindFirstChild(localPlayer.Name);
-				const Body = playerVehicle?.FindFirstChild("Body") as BasePart | undefined;
+				const body = playerVehicle?.FindFirstChild("body") as BasePart | undefined;
 
 				let lastTouchTime = 0;
 				let kd1ViolationTimer = 0;
 
-				if (Body && vehiclesFolder) {
-					touchConnection = Body.Touched.Connect((otherPart) => {
+				if (body && vehiclesFolder) {
+					touchConnection = body.Touched.Connect((otherPart) => {
 						if (otherPart.IsDescendantOf(vehiclesFolder) && !otherPart.IsDescendantOf(playerVehicle!)) {
 							lastTouchTime = os.clock();
 						}
@@ -51,14 +51,14 @@ export class VehicleAntiCheatController implements OnStart {
 				heartbeatConnection = RunService.Heartbeat.Connect((dt) => {
 					if (!vehicleSeat.Parent || dt <= 0) return;
 
-					const currentPos = vehicleSeat.Position;
-					const currentAssemblyVel = vehicleSeat.AssemblyLinearVelocity;
-					const currentAssemblySpeed = currentAssemblyVel.Magnitude;
+					const currentPosition = vehicleSeat.Position;
+					const currentVelocity = vehicleSeat.AssemblyLinearVelocity;
+					const currentspeed = currentVelocity.Magnitude;
 
-					const displacement = currentPos.sub(lastPosition).Magnitude;
+					const displacement = currentPosition.sub(lastPosition).Magnitude;
 					const calculatedSpeed = displacement / dt;
 
-					if (currentAssemblySpeed <= 1 && calculatedSpeed >= 25) {
+					if (currentspeed <= 1 && calculatedSpeed >= 25) {
 						kd1ViolationTimer += dt;
 
 						if (kd1ViolationTimer >= 4) {
@@ -70,8 +70,8 @@ export class VehicleAntiCheatController implements OnStart {
 						kd1ViolationTimer = math.max(0, kd1ViolationTimer - dt * 2);
 					}
 
-					if (currentAssemblySpeed < 350) {
-						const velSpike = currentAssemblySpeed - lastVelocity;
+					if (currentspeed < 350) {
+						const velSpike = currentspeed - lastVelocity;
 						if (velSpike >= 22 && os.clock() - lastTouchTime > 0.6) {
 							if (heartbeatConnection) heartbeatConnection.Disconnect();
 							if (touchConnection) touchConnection.Disconnect();
@@ -80,13 +80,13 @@ export class VehicleAntiCheatController implements OnStart {
 						}
 					}
 
-					lastPosition = currentPos;
-					lastVelocity = currentAssemblySpeed;
+					lastPosition = currentPosition;
+					lastVelocity = currentspeed;
 				});
 			});
 		};
 
-		if (localPlayer.Character) setupCharacter(localPlayer.Character);
-		localPlayer.CharacterAdded.Connect(setupCharacter);
+		if (localPlayer.Character) setup(localPlayer.Character);
+		localPlayer.CharacterAdded.Connect(setup);
 	}
 }

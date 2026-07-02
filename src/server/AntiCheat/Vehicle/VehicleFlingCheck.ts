@@ -16,7 +16,7 @@ export class VehicleSpeedService implements OnStart {
 		const vehiclesFolder = Workspace.FindFirstChild("Vehicles") as Folder | undefined;
 		if (!vehiclesFolder) return;
 
-		const monitorVehicle = (vehicle: Instance) => {
+		const Start = (vehicle: Instance) => {
 			const player = Players.FindFirstChild(vehicle.Name) as Player | undefined;
 			if (!player) return;
 
@@ -60,10 +60,10 @@ export class VehicleSpeedService implements OnStart {
 			this.vehicleConnections.set(vehicle, connection);
 		};
 
-		vehiclesFolder.ChildAdded.Connect(monitorVehicle);
+		vehiclesFolder.ChildAdded.Connect(Start);
 
 		for (const vehicle of vehiclesFolder.GetChildren()) {
-			monitorVehicle(vehicle);
+			Start(vehicle);
 		}
 
 		vehiclesFolder.ChildRemoved.Connect((vehicle) => {

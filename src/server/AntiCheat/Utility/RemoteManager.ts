@@ -28,7 +28,7 @@ export class AntiCheatRemoteService implements OnStart {
 			this.giveRequests.set(userId, current);
 
 			if (current > this.maxRequests) {
-				player.Kick("Exploit detected");
+				player.Kick("Exploits detected");
 				return;
 			}
 

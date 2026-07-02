@@ -1,5 +1,4 @@
 import { Flamework } from "@flamework/core";
-import { Players } from "@rbxts/services";
 
 const startTime = os.clock();
 

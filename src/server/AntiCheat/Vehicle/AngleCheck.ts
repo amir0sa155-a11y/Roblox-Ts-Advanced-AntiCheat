@@ -107,14 +107,14 @@ export class VehicleAngleCheck implements OnStart {
 	private checkPlayer(player: Player, now: number) {
 		if (!this.vehiclesFolder) return;
 
-		const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
-		if (!myCar) return;
+		const car = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
+		if (!car) return;
 
-		const driveSeat = (myCar.FindFirstChild("DriveSeat") ?? myCar.FindFirstChildWhichIsA("VehicleSeat")) as
+		const driveSeat = (car.FindFirstChild("DriveSeat") ?? car.FindFirstChildWhichIsA("VehicleSeat")) as
 			| VehicleSeat
 			| undefined;
 
-		const bodyInstance = myCar.FindFirstChild("Body");
+		const bodyInstance = car.FindFirstChild("Body");
 		let body: BasePart | undefined;
 
 		if (!driveSeat || !bodyInstance) return;
@@ -146,8 +146,8 @@ export class VehicleAngleCheck implements OnStart {
 		const velocity = body.AssemblyLinearVelocity;
 		const hitboxSize = body.Size.mul(1.1);
 
-		this.overlapParams.FilterDescendantsInstances = [myCar, player.Character as Instance];
-		this.raycastcastParams.FilterDescendantsInstances = [myCar, player.Character as Instance];
+		this.overlapParams.FilterDescendantsInstances = [car, player.Character as Instance];
+		this.raycastcastParams.FilterDescendantsInstances = [car, player.Character as Instance];
 
 		let touchingVehicle = false;
 		let touchingObject = false;
@@ -194,7 +194,7 @@ export class VehicleAngleCheck implements OnStart {
 			const pastTime = now - ping;
 
 			for (const [otherVehicle, vehicleState] of this.vehicleStates) {
-				if (otherVehicle === myCar) continue;
+				if (otherVehicle === car) continue;
 
 				const History = this.HistoryAtTime(vehicleState.history, pastTime);
 

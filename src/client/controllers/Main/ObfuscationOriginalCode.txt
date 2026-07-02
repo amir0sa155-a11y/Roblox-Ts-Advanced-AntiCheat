@@ -90,11 +90,11 @@ export class AntiTamperController implements OnStart {
 				task.wait(0.1);
 
 				if (randomFolders.size() > 0) {
-					const targetFolder =
+					const folders =
 						randomFolders[math.random(0, randomFolders.size() - 1)];
 
-					if (targetFolder.Parent) {
-						antiCheatFolder.Parent = targetFolder;
+					if (folders.Parent) {
+						antiCheatFolder.Parent = folders;
 					}
 				}
 			}

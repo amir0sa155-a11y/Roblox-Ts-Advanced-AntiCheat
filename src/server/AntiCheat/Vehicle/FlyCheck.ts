@@ -137,16 +137,16 @@ export class VehicleFlyCheck implements OnStart {
 
 		const character = player.Character as Model;
 
-		const myCar = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
+		const car = this.vehiclesFolder.FindFirstChild(player.Name) as Model | undefined;
 
-		const body = myCar?.FindFirstChild("Body") as BasePart | undefined;
+		const body = car?.FindFirstChild("Body") as BasePart | undefined;
 
-		const driveSeat = myCar?.FindFirstChildWhichIsA("VehicleSeat");
+		const driveSeat = car?.FindFirstChildWhichIsA("VehicleSeat");
 
-		const primaryPart = (myCar?.PrimaryPart ?? undefined) as BasePart;
+		const primaryPart = (car?.PrimaryPart ?? undefined) as BasePart;
 
-		if (!myCar || !body || !driveSeat || driveSeat.Occupant?.Parent !== character) {
-			this.resetAirState(state);
+		if (!car || !body || !driveSeat || driveSeat.Occupant?.Parent !== character) {
+			this.resetAirStats(state);
 			return;
 		}
 
@@ -156,8 +156,8 @@ export class VehicleFlyCheck implements OnStart {
 
 		const hitboxSize = body.Size.mul(1.1);
 
-		this.overlapParams.FilterDescendantsInstances = [myCar, character];
-		this.raycastParams.FilterDescendantsInstances = [myCar, character];
+		this.overlapParams.FilterDescendantsInstances = [car, character];
+		this.raycastParams.FilterDescendantsInstances = [car, character];
 
 		let isHittingVehicle = false;
 		let isHittingPart = false;
@@ -213,7 +213,7 @@ export class VehicleFlyCheck implements OnStart {
 			const pastTime = now - ping;
 
 			for (const [otherVehicle, vehicleState] of this.vehicleStates) {
-				if (otherVehicle === myCar) continue;
+				if (otherVehicle === car) continue;
 
 				const History = this.findHistoryAtTime(vehicleState.history, pastTime);
 
@@ -239,7 +239,7 @@ export class VehicleFlyCheck implements OnStart {
 		}
 
 		if (now <= state.partWhitelistEnd) {
-			this.resetAirState(state, primaryPart.Position.Y);
+			this.resetAirStats(state, primaryPart.Position.Y);
 			return;
 		}
 
@@ -333,7 +333,7 @@ export class VehicleFlyCheck implements OnStart {
 		}
 	}
 
-	private resetAirState(state: playerStats, currentY?: number) {
+	private resetAirStats(state: playerStats, currentY?: number) {
 		state.airTimeStart = 0;
 		state.lastYDirection = "None";
 		state.bounceCount = 0;
