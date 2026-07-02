@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/TypeScript-RobloxTS-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
 <img src="https://img.shields.io/badge/Framework-Flamework-FF6B35?style=for-the-badge" alt="Flamework" />
-<img src="https://img.shields.io/badge/Status-Production%20Ready-2ECC71?style=for-the-badge" alt="Status" />
+
 
 <br />
 <br />
